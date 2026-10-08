@@ -1,20 +1,34 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { getSavedRepos, removeRepo, saveRepo } from '../services/savedReposService'
 
-export function useSavedRepos() {
+/** Repositorios guardados del usuario indicado. Sin usuario (userId vacío) la lista está vacía. */
+export function useSavedRepos(userId) {
   const [savedRepos, setSavedRepos] = useState([])
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     let isActive = true
 
-    getSavedRepos().then((repos) => {
-      if (isActive) setSavedRepos(repos)
-    })
+    // Al cambiar de usuario, vaciamos la lista anterior antes de cargar la nueva.
+    setSavedRepos([])
+    if (!userId) return
+
+    setIsLoading(true)
+    getSavedRepos()
+      .then((repos) => {
+        if (isActive) setSavedRepos(repos)
+      })
+      .catch(() => {
+        if (isActive) setSavedRepos([])
+      })
+      .finally(() => {
+        if (isActive) setIsLoading(false)
+      })
 
     return () => {
       isActive = false
     }
-  }, [])
+  }, [userId])
 
   const savedIds = useMemo(() => new Set(savedRepos.map((repo) => repo.id)), [savedRepos])
 
@@ -34,5 +48,5 @@ export function useSavedRepos() {
     [savedIds],
   )
 
-  return { savedRepos, isSaved, toggleSave }
+  return { savedRepos, isLoading, isSaved, toggleSave }
 }

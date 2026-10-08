@@ -1,12 +1,9 @@
 import { ChevronDownIcon } from '../ui/Icons'
-
-const CONTROL_CLASSES =
-  'h-10 w-full rounded-lg border border-line bg-canvas px-3 text-sm text-fg transition-[border-color,box-shadow] ' +
-  'focus:border-accent focus:ring-4 focus:ring-accent/15 focus:outline-none'
+import { CONTROL_CLASSES, LABEL_CLASSES } from '../ui/formStyles'
 
 function FieldLabel({ htmlFor, children }) {
   return (
-    <label htmlFor={htmlFor} className="text-xs font-medium text-muted">
+    <label htmlFor={htmlFor} className={LABEL_CLASSES}>
       {children}
     </label>
   )

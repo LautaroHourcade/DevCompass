@@ -9,6 +9,8 @@ const VARIANT_CLASSES = {
   primary: 'bg-accent text-on-accent hover:brightness-110',
   secondary: 'border border-line bg-surface text-fg hover:border-accent hover:text-accent',
   ghost: 'text-muted hover:bg-surface-2 hover:text-fg',
+  danger: 'bg-danger text-white hover:brightness-110',
+  'danger-outline': 'border border-danger/50 bg-surface text-danger hover:border-danger',
 }
 
 const SIZE_CLASSES = {

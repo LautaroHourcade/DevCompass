@@ -7,7 +7,8 @@ import { formatNumber, formatRelativeDate } from '../../utils/formatters'
 const STAGGER_DELAY_MS = 30
 const MAX_STAGGERED_CARDS = 12
 
-export default function RepoCard({ repo, index, isSaved, onToggleSave, onOpenDetail }) {
+/** renderActions (opcional): devuelve botones extra para el pie de la tarjeta (p. ej. "Añadir a lista"). */
+export default function RepoCard({ repo, index, isSaved, onToggleSave, onOpenDetail, renderActions }) {
   function handleOpenDetail(event) {
     event.preventDefault()
     onOpenDetail(repo)
@@ -102,6 +103,8 @@ export default function RepoCard({ repo, index, isSaved, onToggleSave, onOpenDet
             <span className="sr-only">(se abre en una pestaña nueva)</span>
           </a>
         </div>
+
+        {renderActions && <div className="flex flex-wrap gap-2">{renderActions(repo)}</div>}
       </footer>
     </article>
   )
