@@ -4,7 +4,7 @@ import SkeletonCard from '../ui/SkeletonCard'
 const SKELETON_COUNT = 6
 const GRID_CLASSES = 'grid gap-4 sm:grid-cols-2 lg:grid-cols-3'
 
-export default function RepoGrid({ repos, isLoading = false, isSaved, onToggleSave, onOpenDetail, renderActions }) {
+export default function RepoGrid({ repos, isLoading = false, isSaved, onToggleSave, onOpenDetail, renderTracking, renderActions }) {
   if (isLoading) {
     return (
       <ul className={GRID_CLASSES} aria-busy="true" aria-label="Cargando repositorios">
@@ -27,6 +27,7 @@ export default function RepoGrid({ repos, isLoading = false, isSaved, onToggleSa
             isSaved={isSaved(repo.id)}
             onToggleSave={onToggleSave}
             onOpenDetail={onOpenDetail}
+            renderTracking={renderTracking}
             renderActions={renderActions}
           />
         </li>

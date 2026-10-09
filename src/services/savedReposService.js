@@ -41,11 +41,17 @@ export function toAppRepo(row) {
     },
     savedId: row.id,
     savedAt: row.created_at,
+    // Seguimiento personal del usuario.
+    status: row.status,
+    notes: row.notes ?? '',
+    tagIds: row.user_repository_tags.map((item) => item.tag_id),
   }
 }
 
 // Columnas que se piden siempre que se leen repositorios guardados.
-export const SAVED_REPO_COLUMNS = 'id, created_at, repositories(*)'
+export const SAVED_REPO_COLUMNS = 'id, created_at, status, notes, repositories(*), user_repository_tags(tag_id)'
+
+export const MAX_NOTE_LENGTH = 2000
 
 /** Convierte un repositorio de la app a la fila de la tabla repositories. */
 function toRepositoryRow(repo) {
@@ -130,4 +136,34 @@ export async function removeRepo(repoId) {
   }
 
   return getSavedRepos()
+}
+
+/**
+ * Actualiza el seguimiento de un repositorio guardado (solo status y notes son editables).
+ * Si RLS no deja actualizar la fila, .single() falla y lo tratamos como error.
+ */
+async function updateSavedRepo(savedId, changes, errorMessage) {
+  const { error } = await supabase
+    .from('user_repositories')
+    .update(changes)
+    .eq('id', savedId)
+    .select('id')
+    .single()
+
+  if (error) throw new Error(errorMessage)
+}
+
+export function updateSavedRepoStatus(savedId, status) {
+  return updateSavedRepo(savedId, { status }, 'No se pudo cambiar el estado. Inténtalo de nuevo.')
+}
+
+/** Guarda la nota. Una nota vacía equivale a borrarla. Devuelve la nota guardada. */
+export async function updateSavedRepoNote(savedId, notes) {
+  const trimmedNotes = notes.trim()
+  await updateSavedRepo(savedId, { notes: trimmedNotes || null }, 'No se pudo guardar la nota. Inténtalo de nuevo.')
+  return trimmedNotes
+}
+
+export function deleteSavedRepoNote(savedId) {
+  return updateSavedRepo(savedId, { notes: null }, 'No se pudo borrar la nota. Inténtalo de nuevo.')
 }

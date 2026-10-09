@@ -1,6 +1,6 @@
 import { Link, NavLink } from 'react-router-dom'
 import ThemeToggle from './ThemeToggle'
-import { BookmarkIcon, CompassIcon, ListIcon, LogOutIcon, SearchIcon, UserIcon } from '../ui/Icons'
+import { BookmarkIcon, CompassIcon, ListIcon, LogOutIcon, SearchIcon, TagIcon, UserIcon } from '../ui/Icons'
 import { buttonClasses } from '../ui/buttonStyles'
 import { getDisplayName } from '../../services/authService'
 
@@ -9,6 +9,7 @@ const NAV_ITEMS = [
   { to: '/', label: 'Explorar', Icon: SearchIcon, requiresAuth: false },
   { to: '/guardados', label: 'Guardados', Icon: BookmarkIcon, requiresAuth: true },
   { to: '/listas', label: 'Listas', Icon: ListIcon, requiresAuth: true },
+  { to: '/etiquetas', label: 'Etiquetas', Icon: TagIcon, requiresAuth: true },
 ]
 
 function navLinkClasses({ isActive }) {

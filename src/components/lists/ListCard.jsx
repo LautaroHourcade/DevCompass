@@ -1,14 +1,21 @@
 import { Link } from 'react-router-dom'
-import { EditIcon, ListIcon, TrashIcon } from '../ui/Icons'
+import TagChip from '../tags/TagChip'
+import { EditIcon, ListIcon, TagIcon, TrashIcon } from '../ui/Icons'
 import { buttonClasses } from '../ui/buttonStyles'
 import { formatRelativeDate } from '../../utils/formatters'
 
-export default function ListCard({ list, index, onEdit, onDelete }) {
+/** tags: etiquetas de la lista ya resueltas ({ id, name }). onEditTags abre el selector de etiquetas. */
+export default function ListCard({ list, tags, index, onEdit, onEditTags, onDelete }) {
   const repoCount = list.savedIds.length
 
   function handleEdit(event) {
     event.preventDefault()
     onEdit(list)
+  }
+
+  function handleEditTags(event) {
+    event.preventDefault()
+    onEditTags(list)
   }
 
   function handleDelete(event) {
@@ -40,10 +47,29 @@ export default function ListCard({ list, index, onEdit, onDelete }) {
 
       <p className="line-clamp-3 flex-1 text-sm text-muted">{list.description || 'Sin descripción.'}</p>
 
+      {tags.length > 0 && (
+        <ul aria-label="Etiquetas de la lista" className="flex flex-wrap gap-1.5">
+          {tags.map((tag) => (
+            <li key={tag.id}>
+              <TagChip name={tag.name} />
+            </li>
+          ))}
+        </ul>
+      )}
+
       <footer className="flex gap-2 border-t border-line pt-4">
         <Link to={`/listas/${list.id}`} className={buttonClasses({ size: 'sm', className: 'flex-1' })}>
           Abrir
         </Link>
+        <button
+          type="button"
+          onClick={handleEditTags}
+          aria-label={`Etiquetas de la lista ${list.name}`}
+          title="Etiquetas"
+          className={buttonClasses({ variant: 'ghost', size: 'sm' })}
+        >
+          <TagIcon className="size-4" />
+        </button>
         <button
           type="button"
           onClick={handleEdit}

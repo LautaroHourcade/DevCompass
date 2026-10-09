@@ -7,8 +7,11 @@ import { formatNumber, formatRelativeDate } from '../../utils/formatters'
 const STAGGER_DELAY_MS = 30
 const MAX_STAGGERED_CARDS = 12
 
-/** renderActions (opcional): devuelve botones extra para el pie de la tarjeta (p. ej. "Añadir a lista"). */
-export default function RepoCard({ repo, index, isSaved, onToggleSave, onOpenDetail, renderActions }) {
+/**
+ * renderTracking (opcional): devuelve el seguimiento personal (estado, nota, etiquetas) bajo las estadísticas.
+ * renderActions (opcional): devuelve botones extra para el pie de la tarjeta (p. ej. "Añadir a lista").
+ */
+export default function RepoCard({ repo, index, isSaved, onToggleSave, onOpenDetail, renderTracking, renderActions }) {
   function handleOpenDetail(event) {
     event.preventDefault()
     onOpenDetail(repo)
@@ -70,6 +73,8 @@ export default function RepoCard({ repo, index, isSaved, onToggleSave, onOpenDet
           <span className="sr-only">issues abiertos</span>
         </li>
       </ul>
+
+      {renderTracking && renderTracking(repo)}
 
       <footer className="mt-4 flex flex-col gap-4 border-t border-line pt-4">
         <p className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted">

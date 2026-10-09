@@ -8,6 +8,7 @@ import ExploreView from './views/ExploreView'
 import SavedView from './views/SavedView'
 import ListsView from './views/ListsView'
 import ListDetailView from './views/ListDetailView'
+import TagsView from './views/TagsView'
 import LoginView from './views/LoginView'
 import RegisterView from './views/RegisterView'
 import ProfileView from './views/ProfileView'
@@ -16,14 +17,23 @@ import { useAuth } from './hooks/useAuth'
 import { useTheme } from './hooks/useTheme'
 import { useSavedRepos } from './hooks/useSavedRepos'
 import { useLists } from './hooks/useLists'
+import { useTags } from './hooks/useTags'
 import { useToast } from './hooks/useToast'
 import { signOut } from './services/authService'
 
 export default function App() {
   const { theme, toggleTheme } = useTheme()
   const { user } = useAuth()
-  const { savedRepos, isLoading: isLoadingSaved, isSaved, toggleSave } = useSavedRepos(user?.id)
+  const {
+    savedRepos,
+    isLoading: isLoadingSaved,
+    isSaved,
+    toggleSave,
+    forgetTag,
+    ...tracking
+  } = useSavedRepos(user?.id)
   const listsState = useLists(user?.id)
+  const tagsState = useTags(user?.id)
   const { refresh: refreshLists } = listsState
   const { showToast } = useToast()
   const navigate = useNavigate()
@@ -75,12 +85,22 @@ export default function App() {
 
   const handleCloseDetail = useCallback(() => setSelectedRepo(null), [])
 
+  // Al eliminar una etiqueta, la base de datos ya quitó sus asociaciones: recargamos lo que se ve.
+  const handleTagDeleted = useCallback(
+    (tagId) => {
+      forgetTag(tagId)
+      refreshLists()
+    },
+    [forgetTag, refreshLists],
+  )
+
   const repoGridProps = {
     savedRepos,
     isSaved,
     onToggleSave: handleToggleSave,
     onOpenDetail: setSelectedRepo,
     listsState,
+    tagsState,
   }
 
   return (
@@ -115,11 +135,27 @@ export default function App() {
           </Route>
 
           <Route element={<ProtectedRoute />}>
-            <Route path="/guardados" element={<SavedView isLoading={isLoadingSaved} {...repoGridProps} />} />
-            <Route path="/listas" element={<ListsView listsState={listsState} />} />
+            <Route
+              path="/guardados"
+              element={
+                <SavedView isLoading={isLoadingSaved} tracking={tracking} {...repoGridProps} />
+              }
+            />
+            <Route path="/listas" element={<ListsView listsState={listsState} tagsState={tagsState} />} />
             <Route
               path="/listas/:listId"
               element={<ListDetailView isLoadingSaved={isLoadingSaved} {...repoGridProps} />}
+            />
+            <Route
+              path="/etiquetas"
+              element={
+                <TagsView
+                  tagsState={tagsState}
+                  savedRepos={savedRepos}
+                  lists={listsState.lists}
+                  onTagDeleted={handleTagDeleted}
+                />
+              }
             />
             <Route path="/perfil" element={<ProfileView />} />
           </Route>

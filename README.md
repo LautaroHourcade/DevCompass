@@ -27,15 +27,27 @@ Sin token la app funciona igual, pero GitHub limita la búsqueda a 10 peticiones
 
 ```
 src/
-  components/   layout, search, repos y ui (componentes reutilizables)
-  views/        pantallas: Explorar y Guardados
-  hooks/        lógica de estado (búsqueda, guardados, tema, toasts)
-  services/     acceso a datos (API de GitHub, guardados)
-  context/      proveedor de notificaciones
-  constants/    opciones de filtros y colores de lenguajes
-  utils/        formateo de números y fechas
+  components/   auth, layout, search, repos, lists, tags, tracking, profile y ui
+  views/        pantallas: Explorar, Guardados, Listas, Etiquetas, Perfil, Entrar y Registro
+  hooks/        lógica de estado (sesión, búsqueda, guardados, listas, etiquetas, tema, toasts)
+  services/     acceso a datos (API de GitHub y Supabase)
+  context/      proveedores de sesión y notificaciones
+  constants/    opciones de filtros, estados de seguimiento y colores de lenguajes
+  utils/        formateo y validaciones
   styles/       Tailwind y tokens de diseño (1rem = 10px)
+supabase/
+  migrations/   esquema de la base de datos y políticas RLS
+  functions/    Edge Functions (eliminar cuenta)
 ```
 
-Los repositorios guardados se almacenan de momento en `localStorage` (`src/services/savedReposService.js`).
-Para migrar a Supabase solo hay que reimplementar ese fichero.
+## Datos
+
+Los usuarios, repositorios guardados, listas y etiquetas se guardan en Supabase. Cada tabla tiene
+Row Level Security: un usuario solo puede leer y modificar sus propios datos, también accediendo
+directamente a la base de datos.
+
+En la colección de **Guardados** cada repositorio tiene un estado (Por aprender, En progreso,
+Completado), una nota opcional y etiquetas propias. La colección se puede filtrar por estado y por
+etiqueta. Las mismas etiquetas sirven para clasificar las **Listas**, que también se pueden filtrar
+por etiqueta. Las etiquetas se gestionan en **Etiquetas**: no se permiten duplicados que solo difieran
+en mayúsculas o espacios, y al eliminar una se quita de repositorios y listas sin borrarlos.

@@ -3,14 +3,17 @@ import { Link, useParams } from 'react-router-dom'
 import PageHeader from '../components/layout/PageHeader'
 import ListFormDialog from '../components/lists/ListFormDialog'
 import RepoGrid from '../components/repos/RepoGrid'
+import TagChip from '../components/tags/TagChip'
+import TagPickerDialog from '../components/tags/TagPickerDialog'
 import EmptyState from '../components/ui/EmptyState'
 import PageLoader from '../components/ui/PageLoader'
-import { ArrowLeftIcon, BookmarkIcon, CloseIcon, EditIcon, ListIcon } from '../components/ui/Icons'
+import { ArrowLeftIcon, BookmarkIcon, CloseIcon, EditIcon, ListIcon, TagIcon } from '../components/ui/Icons'
 import { buttonClasses } from '../components/ui/buttonStyles'
 import { useToast } from '../hooks/useToast'
 
 export default function ListDetailView({
   listsState,
+  tagsState,
   savedRepos,
   isLoadingSaved,
   isSaved,
@@ -18,9 +21,10 @@ export default function ListDetailView({
   onOpenDetail,
 }) {
   const { listId } = useParams()
-  const { lists, isLoading, updateList, removeRepoFromList } = listsState
+  const { lists, isLoading, updateList, removeRepoFromList, addTagToList, removeTagFromList } = listsState
   const { showToast } = useToast()
   const [isEditing, setIsEditing] = useState(false)
+  const [isEditingTags, setIsEditingTags] = useState(false)
 
   const list = lists.find((candidate) => candidate.id === listId)
 
@@ -43,6 +47,7 @@ export default function ListDetailView({
 
   // El detalle sale de los repos guardados: no hace falta otra consulta.
   const listRepos = savedRepos.filter((repo) => list.savedIds.includes(repo.savedId))
+  const listTags = list.tagIds.map(tagsState.getTagById).filter(Boolean)
 
   async function handleRemoveFromList(repo) {
     try {
@@ -61,6 +66,11 @@ export default function ListDetailView({
   function handleOpenEdit(event) {
     event.preventDefault()
     setIsEditing(true)
+  }
+
+  function handleOpenTags(event) {
+    event.preventDefault()
+    setIsEditingTags(true)
   }
 
   function renderListActions(repo) {
@@ -97,11 +107,27 @@ export default function ListDetailView({
         titleId="list-detail-title"
         description={list.description || `${listRepos.length} repositorios en esta lista.`}
       >
-        <button type="button" onClick={handleOpenEdit} className={buttonClasses()}>
-          <EditIcon className="size-4" />
-          Editar
-        </button>
+        <div className="flex gap-2">
+          <button type="button" onClick={handleOpenTags} className={buttonClasses()}>
+            <TagIcon className="size-4" />
+            Etiquetas
+          </button>
+          <button type="button" onClick={handleOpenEdit} className={buttonClasses()}>
+            <EditIcon className="size-4" />
+            Editar
+          </button>
+        </div>
       </PageHeader>
+
+      {listTags.length > 0 && (
+        <ul aria-label="Etiquetas de la lista" className="-mt-2 flex flex-wrap gap-1.5">
+          {listTags.map((tag) => (
+            <li key={tag.id}>
+              <TagChip name={tag.name} />
+            </li>
+          ))}
+        </ul>
+      )}
 
       {listRepos.length === 0 ? (
         <EmptyState
@@ -121,6 +147,18 @@ export default function ListDetailView({
           onToggleSave={onToggleSave}
           onOpenDetail={onOpenDetail}
           renderActions={renderListActions}
+        />
+      )}
+
+      {isEditingTags && (
+        <TagPickerDialog
+          subtitle={list.name}
+          selectedTagIds={list.tagIds}
+          tags={tagsState.tags}
+          onAdd={(tagId) => addTagToList(list.id, tagId)}
+          onRemove={(tagId) => removeTagFromList(list.id, tagId)}
+          onCreate={tagsState.createTag}
+          onClose={() => setIsEditingTags(false)}
         />
       )}
 

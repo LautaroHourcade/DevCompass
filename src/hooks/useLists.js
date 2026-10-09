@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   addRepoToList,
+  addTagToList,
   createList,
   deleteList,
   getLists,
   removeRepoFromList,
+  removeTagFromList,
   updateList,
 } from '../services/listsService'
 
@@ -61,6 +63,8 @@ export function useLists(userId) {
       deleteList: withRefresh(deleteList),
       addRepoToList: withRefresh(addRepoToList),
       removeRepoFromList: withRefresh(removeRepoFromList),
+      addTagToList: withRefresh(addTagToList),
+      removeTagFromList: withRefresh(removeTagFromList),
     }),
     [withRefresh],
   )

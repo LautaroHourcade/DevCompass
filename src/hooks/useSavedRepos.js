@@ -1,5 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { getSavedRepos, removeRepo, saveRepo } from '../services/savedReposService'
+import {
+  deleteSavedRepoNote,
+  getSavedRepos,
+  removeRepo,
+  saveRepo,
+  updateSavedRepoNote,
+  updateSavedRepoStatus,
+} from '../services/savedReposService'
+import { addTagToSavedRepo, removeTagFromSavedRepo } from '../services/tagsService'
 
 /** Repositorios guardados del usuario indicado. Sin usuario (userId vacío) la lista está vacía. */
 export function useSavedRepos(userId) {
@@ -48,5 +56,48 @@ export function useSavedRepos(userId) {
     [savedIds],
   )
 
-  return { savedRepos, isLoading, isSaved, toggleSave }
+  /**
+   * Cambia un repositorio guardado en el estado local.
+   * Solo se llama después de que Supabase confirme el cambio, así la interfaz refleja lo guardado.
+   */
+  const patchRepo = useCallback((savedId, getChanges) => {
+    setSavedRepos((repos) => repos.map((repo) => (repo.savedId === savedId ? { ...repo, ...getChanges(repo) } : repo)))
+  }, [])
+
+  // Acciones de seguimiento: estado, nota y etiquetas. Lanzan un error si Supabase falla.
+  const trackingActions = useMemo(
+    () => ({
+      updateStatus: async (savedId, status) => {
+        await updateSavedRepoStatus(savedId, status)
+        patchRepo(savedId, () => ({ status }))
+      },
+      updateNote: async (savedId, notes) => {
+        const savedNotes = await updateSavedRepoNote(savedId, notes)
+        patchRepo(savedId, () => ({ notes: savedNotes }))
+      },
+      deleteNote: async (savedId) => {
+        await deleteSavedRepoNote(savedId)
+        patchRepo(savedId, () => ({ notes: '' }))
+      },
+      addTag: async (savedId, tagId) => {
+        await addTagToSavedRepo(savedId, tagId)
+        patchRepo(savedId, (repo) => ({ tagIds: repo.tagIds.includes(tagId) ? repo.tagIds : [...repo.tagIds, tagId] }))
+      },
+      removeTag: async (savedId, tagId) => {
+        await removeTagFromSavedRepo(savedId, tagId)
+        patchRepo(savedId, (repo) => ({ tagIds: repo.tagIds.filter((id) => id !== tagId) }))
+      },
+      // Tras eliminar una etiqueta, la base de datos ya borró sus asignaciones: solo falta reflejarlo aquí.
+      forgetTag: (tagId) => {
+        setSavedRepos((repos) =>
+          repos.map((repo) =>
+            repo.tagIds.includes(tagId) ? { ...repo, tagIds: repo.tagIds.filter((id) => id !== tagId) } : repo,
+          ),
+        )
+      },
+    }),
+    [patchRepo],
+  )
+
+  return { savedRepos, isLoading, isSaved, toggleSave, ...trackingActions }
 }

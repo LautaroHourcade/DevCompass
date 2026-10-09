@@ -274,3 +274,32 @@ export function ArrowLeftIcon(props) {
     </Icon>
   )
 }
+
+export function TagIcon(props) {
+  return (
+    <Icon {...props}>
+      <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+      <line x1="7" y1="7" x2="7.01" y2="7" />
+    </Icon>
+  )
+}
+
+export function NoteIcon(props) {
+  return (
+    <Icon {...props}>
+      <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
+      <polyline points="14 3 14 9 20 9" />
+      <line x1="8" y1="13" x2="16" y2="13" />
+      <line x1="8" y1="17" x2="13" y2="17" />
+    </Icon>
+  )
+}
+
+export function ResetIcon(props) {
+  return (
+    <Icon {...props}>
+      <polyline points="1 4 1 10 7 10" />
+      <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+    </Icon>
+  )
+}
