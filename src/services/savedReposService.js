@@ -3,6 +3,7 @@
 // para que useSavedRepos no tenga que cambiar.
 import { supabase } from '../lib/supabase'
 import { getCurrentUser } from './authService'
+import { requestInitialCapture } from './statsService'
 
 const UNIQUE_VIOLATION_CODE = '23505'
 
@@ -111,7 +112,10 @@ export async function saveRepo(repo) {
     throw new Error('No se pudo guardar el repositorio. Inténtalo de nuevo.')
   }
 
-  return getSavedRepos()
+  // Primera captura de estadísticas, a la vez que recargamos la colección.
+  // Si falla no es grave: la tarea diaria la registrará en su próxima ejecución.
+  const [repos] = await Promise.all([getSavedRepos(), requestInitialCapture(stored.id).catch(() => {})])
+  return repos
 }
 
 export async function removeRepo(repoId) {

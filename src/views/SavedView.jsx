@@ -8,6 +8,7 @@ import NoteDialog from '../components/tracking/NoteDialog'
 import RepoTracking from '../components/tracking/RepoTracking'
 import SavedFilters, { EMPTY_SAVED_FILTERS } from '../components/tracking/SavedFilters'
 import EmptyState from '../components/ui/EmptyState'
+import ErrorMessage from '../components/ui/ErrorMessage'
 import { BookmarkIcon, FilterIcon, ListIcon, TagIcon } from '../components/ui/Icons'
 import { buttonClasses } from '../components/ui/buttonStyles'
 import { getStatusOption } from '../constants/repoStatus'
@@ -19,6 +20,8 @@ import { useToast } from '../hooks/useToast'
  */
 export default function SavedView({
   savedRepos,
+  savedLoadError,
+  onReloadSaved,
   isLoading,
   isSaved,
   onToggleSave,
@@ -142,7 +145,15 @@ export default function SavedView({
     )
   }
 
+  function getDescription() {
+    if (savedLoadError) return 'No pudimos cargar tu colección.'
+    if (isLoading) return 'Cargando tu colección…'
+    if (savedRepos.length === 1) return 'Tienes 1 repositorio en seguimiento.'
+    return `Tienes ${savedRepos.length} repositorios en seguimiento.`
+  }
+
   function renderContent() {
+    if (savedLoadError) return <ErrorMessage error={savedLoadError} onRetry={onReloadSaved} />
     if (isLoading && savedRepos.length === 0) return <RepoGrid repos={[]} isLoading />
 
     if (savedRepos.length === 0) {
@@ -202,13 +213,7 @@ export default function SavedView({
         command="ls ~/guardados"
         title="Tus repositorios guardados"
         titleId="saved-title"
-        description={
-          isLoading
-            ? 'Cargando tu colección…'
-            : savedRepos.length === 1
-              ? 'Tienes 1 repositorio en seguimiento.'
-              : `Tienes ${savedRepos.length} repositorios en seguimiento.`
-        }
+        description={getDescription()}
       />
 
       {renderContent()}

@@ -1,9 +1,9 @@
 import { DEFAULT_QUERY } from '../constants/filters'
 import { getDateDaysAgo } from '../utils/formatters'
 
-// El frontend nunca habla directamente con api.github.com: pasa por un proxy
-// (hoy el de Vite, mañana una Edge Function de Supabase) que añade el token.
-const API_BASE_URL = '/api/github'
+// El frontend nunca habla directamente con api.github.com: pasa por la Edge Function
+// github-proxy de Supabase, que añade el token (secreto del servidor, nunca en el navegador).
+const API_BASE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/github-proxy`
 
 export const RESULTS_PER_PAGE = 24
 

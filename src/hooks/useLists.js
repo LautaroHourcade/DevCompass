@@ -17,6 +17,10 @@ import {
 export function useLists(userId) {
   const [lists, setLists] = useState([])
   const [isLoading, setIsLoading] = useState(false)
+  // Si la carga falla guardamos el error para mostrarlo (no una colección vacía engañosa).
+  const [loadError, setLoadError] = useState(null)
+  // Cambiar reloadKey vuelve a lanzar la carga (botón "Reintentar").
+  const [reloadKey, setReloadKey] = useState(0)
 
   const refresh = useCallback(async () => {
     setLists(await getLists())
@@ -26,6 +30,7 @@ export function useLists(userId) {
     let isActive = true
 
     setLists([])
+    setLoadError(null)
     if (!userId) return
 
     setIsLoading(true)
@@ -33,8 +38,8 @@ export function useLists(userId) {
       .then((loaded) => {
         if (isActive) setLists(loaded)
       })
-      .catch(() => {
-        if (isActive) setLists([])
+      .catch((error) => {
+        if (isActive) setLoadError(error)
       })
       .finally(() => {
         if (isActive) setIsLoading(false)
@@ -43,7 +48,9 @@ export function useLists(userId) {
     return () => {
       isActive = false
     }
-  }, [userId])
+  }, [userId, reloadKey])
+
+  const reload = useCallback(() => setReloadKey((key) => key + 1), [])
 
   // Envuelve una operación del servicio para recargar las listas al terminar.
   const withRefresh = useCallback(
@@ -69,5 +76,5 @@ export function useLists(userId) {
     [withRefresh],
   )
 
-  return { lists, isLoading, refresh, ...actions }
+  return { lists, isLoading, loadError, reload, refresh, ...actions }
 }

@@ -6,6 +6,7 @@ import RepoGrid from '../components/repos/RepoGrid'
 import TagChip from '../components/tags/TagChip'
 import TagPickerDialog from '../components/tags/TagPickerDialog'
 import EmptyState from '../components/ui/EmptyState'
+import ErrorMessage from '../components/ui/ErrorMessage'
 import PageLoader from '../components/ui/PageLoader'
 import { ArrowLeftIcon, BookmarkIcon, CloseIcon, EditIcon, ListIcon, TagIcon } from '../components/ui/Icons'
 import { buttonClasses } from '../components/ui/buttonStyles'
@@ -16,17 +17,23 @@ export default function ListDetailView({
   tagsState,
   savedRepos,
   isLoadingSaved,
+  savedLoadError,
+  onReloadSaved,
   isSaved,
   onToggleSave,
   onOpenDetail,
 }) {
   const { listId } = useParams()
-  const { lists, isLoading, updateList, removeRepoFromList, addTagToList, removeTagFromList } = listsState
+  const { lists, isLoading, loadError, reload, updateList, removeRepoFromList, addTagToList, removeTagFromList } = listsState
   const { showToast } = useToast()
   const [isEditing, setIsEditing] = useState(false)
   const [isEditingTags, setIsEditingTags] = useState(false)
 
   const list = lists.find((candidate) => candidate.id === listId)
+
+  // Sin listas o sin guardados no podemos mostrar la lista: avisamos del error en vez de decir que no existe.
+  if (loadError) return <ErrorMessage error={loadError} onRetry={reload} />
+  if (savedLoadError) return <ErrorMessage error={savedLoadError} onRetry={onReloadSaved} />
 
   if ((isLoading || isLoadingSaved) && !list) return <PageLoader label="Cargando la lista…" />
 

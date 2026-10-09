@@ -11,6 +11,8 @@ const dateFormatter = new Intl.DateTimeFormat(LOCALE, { dateStyle: 'medium' })
 
 const timeFormatter = new Intl.DateTimeFormat(LOCALE, { timeStyle: 'short' })
 
+const dateTimeFormatter = new Intl.DateTimeFormat(LOCALE, { dateStyle: 'medium', timeStyle: 'short' })
+
 const relativeTimeFormatter = new Intl.RelativeTimeFormat(LOCALE, { numeric: 'auto' })
 
 // Unidades de mayor a menor, con su duración en segundos.
@@ -36,6 +38,11 @@ export function formatFullNumber(value) {
 /** "2024-05-01T10:00:00Z" -> "1 may 2024" */
 export function formatDate(isoDate) {
   return dateFormatter.format(new Date(isoDate))
+}
+
+/** "2024-05-01T10:00:00Z" -> "1 may 2024, 12:00" (hora local) */
+export function formatDateTime(isoDate) {
+  return dateTimeFormatter.format(new Date(isoDate))
 }
 
 /** Date -> "18:30" */

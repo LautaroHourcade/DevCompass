@@ -3,6 +3,7 @@ import PageHeader from '../components/layout/PageHeader'
 import TagFormDialog from '../components/tags/TagFormDialog'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
 import EmptyState from '../components/ui/EmptyState'
+import ErrorMessage from '../components/ui/ErrorMessage'
 import PageLoader from '../components/ui/PageLoader'
 import { EditIcon, PlusIcon, TagIcon, TrashIcon } from '../components/ui/Icons'
 import { buttonClasses } from '../components/ui/buttonStyles'
@@ -13,7 +14,7 @@ import { useToast } from '../hooks/useToast'
  * onTagDeleted: avisa para quitar la etiqueta de los repos guardados y las listas en pantalla.
  */
 export default function TagsView({ tagsState, savedRepos, lists, onTagDeleted }) {
-  const { tags, isLoading, createTag, renameTag, deleteTag } = tagsState
+  const { tags, isLoading, loadError, reload, createTag, renameTag, deleteTag } = tagsState
   const { showToast } = useToast()
   // null: cerrado. { tag: null }: crear. { tag }: renombrar.
   const [formState, setFormState] = useState(null)
@@ -74,7 +75,9 @@ export default function TagsView({ tagsState, savedRepos, lists, onTagDeleted })
         {tags.length > 0 && createButton}
       </PageHeader>
 
-      {isLoading && tags.length === 0 ? (
+      {loadError ? (
+        <ErrorMessage error={loadError} onRetry={reload} />
+      ) : isLoading && tags.length === 0 ? (
         <PageLoader label="Cargando tus etiquetas…" />
       ) : tags.length === 0 ? (
         <EmptyState

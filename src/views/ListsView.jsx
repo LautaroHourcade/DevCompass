@@ -6,6 +6,7 @@ import { SelectField } from '../components/search/FilterField'
 import TagPickerDialog from '../components/tags/TagPickerDialog'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
 import EmptyState from '../components/ui/EmptyState'
+import ErrorMessage from '../components/ui/ErrorMessage'
 import PageLoader from '../components/ui/PageLoader'
 import { FilterIcon, ListIcon, PlusIcon, ResetIcon } from '../components/ui/Icons'
 import { buttonClasses } from '../components/ui/buttonStyles'
@@ -16,7 +17,7 @@ import { useToast } from '../hooks/useToast'
  * tagsState: lo que devuelve useTags.
  */
 export default function ListsView({ listsState, tagsState }) {
-  const { lists, isLoading, createList, updateList, deleteList, addTagToList, removeTagFromList } = listsState
+  const { lists, isLoading, loadError, reload, createList, updateList, deleteList, addTagToList, removeTagFromList } = listsState
   const { showToast } = useToast()
   // null: cerrado. { list: null }: crear. { list }: editar.
   const [formState, setFormState] = useState(null)
@@ -114,7 +115,9 @@ export default function ListsView({ listsState, tagsState }) {
         {lists.length > 0 && createButton}
       </PageHeader>
 
-      {isLoading && lists.length === 0 ? (
+      {loadError ? (
+        <ErrorMessage error={loadError} onRetry={reload} />
+      ) : isLoading && lists.length === 0 ? (
         <PageLoader label="Cargando tus listas…" />
       ) : lists.length === 0 ? (
         <EmptyState

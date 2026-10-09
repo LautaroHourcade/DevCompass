@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import Modal from '../ui/Modal'
 import SaveButton from './SaveButton'
 import LanguageBar from './LanguageBar'
+import RepoHistory from '../stats/RepoHistory'
 import {
   CalendarIcon,
   ClockIcon,
@@ -38,6 +39,7 @@ export default function RepoDetailModal({ repo, onClose, isSaved, onToggleSave }
 
 function RepoDetail({ repo, onClose, isSaved, onToggleSave }) {
   const languagesState = useRepositoryLanguages(repo.id)
+  const isRepoSaved = isSaved(repo.id)
 
   function handleClose(event) {
     event.preventDefault()
@@ -121,8 +123,11 @@ function RepoDetail({ repo, onClose, isSaved, onToggleSave }) {
         <LanguagesContent state={languagesState} />
       </section>
 
+      {/* El historial solo existe para repositorios que DevCompass sigue (guardados por el usuario). */}
+      {isRepoSaved && <RepoHistory githubId={repo.id} />}
+
       <footer className="flex flex-col-reverse gap-2 border-t border-line pt-5 sm:flex-row sm:justify-end">
-        <SaveButton repo={repo} isSaved={isSaved(repo.id)} onToggleSave={onToggleSave} />
+        <SaveButton repo={repo} isSaved={isRepoSaved} onToggleSave={onToggleSave} />
         {repo.homepage && (
           <a
             href={repo.homepage}

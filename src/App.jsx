@@ -1,18 +1,11 @@
-import { useCallback, useEffect, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useState } from 'react'
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import Header from './components/layout/Header'
 import Footer from './components/layout/Footer'
 import RepoDetailModal from './components/repos/RepoDetailModal'
+import PageLoader from './components/ui/PageLoader'
 import { ProtectedRoute, PublicOnlyRoute } from './components/auth/RouteGuards'
 import ExploreView from './views/ExploreView'
-import SavedView from './views/SavedView'
-import ListsView from './views/ListsView'
-import ListDetailView from './views/ListDetailView'
-import TagsView from './views/TagsView'
-import LoginView from './views/LoginView'
-import RegisterView from './views/RegisterView'
-import ProfileView from './views/ProfileView'
-import NotFoundView from './views/NotFoundView'
 import { useAuth } from './hooks/useAuth'
 import { useTheme } from './hooks/useTheme'
 import { useSavedRepos } from './hooks/useSavedRepos'
@@ -21,12 +14,24 @@ import { useTags } from './hooks/useTags'
 import { useToast } from './hooks/useToast'
 import { signOut } from './services/authService'
 
+// Explorar se carga siempre; el resto de pantallas se descargan solo cuando se visitan.
+const SavedView = lazy(() => import('./views/SavedView'))
+const ListsView = lazy(() => import('./views/ListsView'))
+const ListDetailView = lazy(() => import('./views/ListDetailView'))
+const TagsView = lazy(() => import('./views/TagsView'))
+const LoginView = lazy(() => import('./views/LoginView'))
+const RegisterView = lazy(() => import('./views/RegisterView'))
+const ProfileView = lazy(() => import('./views/ProfileView'))
+const NotFoundView = lazy(() => import('./views/NotFoundView'))
+
 export default function App() {
   const { theme, toggleTheme } = useTheme()
   const { user } = useAuth()
   const {
     savedRepos,
     isLoading: isLoadingSaved,
+    loadError: savedLoadError,
+    reload: reloadSaved,
     isSaved,
     toggleSave,
     forgetTag,
@@ -47,6 +52,11 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }, [location.pathname])
 
+  // Recarga las listas tras un cambio que las afecta en la base de datos (cascade).
+  const refreshListsSafely = useCallback(() => {
+    refreshLists().catch(() => showToast('No se pudieron actualizar tus listas', 'error'))
+  }, [refreshLists, showToast])
+
   const handleToggleSave = useCallback(
     async (repo) => {
       // Sin sesión no se puede guardar: invitamos a entrar y volvemos aquí después.
@@ -63,14 +73,14 @@ export default function App() {
           showToast(`"${repo.name}" añadido a guardados`, 'success')
         } else {
           // Al quitarlo de guardados también sale de sus listas (cascade en la base de datos).
-          refreshLists()
+          refreshListsSafely()
           showToast(`"${repo.name}" eliminado de guardados`, 'info')
         }
       } catch (error) {
         showToast(error.message, 'error')
       }
     },
-    [user, toggleSave, refreshLists, showToast, navigate, location.pathname],
+    [user, toggleSave, refreshListsSafely, showToast, navigate, location.pathname],
   )
 
   const handleSignOut = useCallback(async () => {
@@ -89,13 +99,15 @@ export default function App() {
   const handleTagDeleted = useCallback(
     (tagId) => {
       forgetTag(tagId)
-      refreshLists()
+      refreshListsSafely()
     },
-    [forgetTag, refreshLists],
+    [forgetTag, refreshListsSafely],
   )
 
   const repoGridProps = {
     savedRepos,
+    savedLoadError,
+    onReloadSaved: reloadSaved,
     isSaved,
     onToggleSave: handleToggleSave,
     onOpenDetail: setSelectedRepo,
@@ -126,42 +138,44 @@ export default function App() {
           <ExploreView isSaved={isSaved} onToggleSave={handleToggleSave} onOpenDetail={setSelectedRepo} />
         </div>
 
-        <Routes>
-          <Route path="/" element={null} />
+        <Suspense fallback={<PageLoader label="Cargando…" />}>
+          <Routes>
+            <Route path="/" element={null} />
 
-          <Route element={<PublicOnlyRoute />}>
-            <Route path="/entrar" element={<LoginView />} />
-            <Route path="/registro" element={<RegisterView />} />
-          </Route>
+            <Route element={<PublicOnlyRoute />}>
+              <Route path="/entrar" element={<LoginView />} />
+              <Route path="/registro" element={<RegisterView />} />
+            </Route>
 
-          <Route element={<ProtectedRoute />}>
-            <Route
-              path="/guardados"
-              element={
-                <SavedView isLoading={isLoadingSaved} tracking={tracking} {...repoGridProps} />
-              }
-            />
-            <Route path="/listas" element={<ListsView listsState={listsState} tagsState={tagsState} />} />
-            <Route
-              path="/listas/:listId"
-              element={<ListDetailView isLoadingSaved={isLoadingSaved} {...repoGridProps} />}
-            />
-            <Route
-              path="/etiquetas"
-              element={
-                <TagsView
-                  tagsState={tagsState}
-                  savedRepos={savedRepos}
-                  lists={listsState.lists}
-                  onTagDeleted={handleTagDeleted}
-                />
-              }
-            />
-            <Route path="/perfil" element={<ProfileView />} />
-          </Route>
+            <Route element={<ProtectedRoute />}>
+              <Route
+                path="/guardados"
+                element={
+                  <SavedView isLoading={isLoadingSaved} tracking={tracking} {...repoGridProps} />
+                }
+              />
+              <Route path="/listas" element={<ListsView listsState={listsState} tagsState={tagsState} />} />
+              <Route
+                path="/listas/:listId"
+                element={<ListDetailView isLoadingSaved={isLoadingSaved} {...repoGridProps} />}
+              />
+              <Route
+                path="/etiquetas"
+                element={
+                  <TagsView
+                    tagsState={tagsState}
+                    savedRepos={savedRepos}
+                    lists={listsState.lists}
+                    onTagDeleted={handleTagDeleted}
+                  />
+                }
+              />
+              <Route path="/perfil" element={<ProfileView />} />
+            </Route>
 
-          <Route path="*" element={<NotFoundView />} />
-        </Routes>
+            <Route path="*" element={<NotFoundView />} />
+          </Routes>
+        </Suspense>
       </main>
 
       <Footer />

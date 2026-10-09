@@ -9,11 +9,16 @@ function sortByName(tags) {
 export function useTags(userId) {
   const [tags, setTags] = useState([])
   const [isLoading, setIsLoading] = useState(false)
+  // Si la carga falla guardamos el error para mostrarlo (no una colección vacía engañosa).
+  const [loadError, setLoadError] = useState(null)
+  // Cambiar reloadKey vuelve a lanzar la carga (botón "Reintentar").
+  const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
     let isActive = true
 
     setTags([])
+    setLoadError(null)
     if (!userId) return
 
     setIsLoading(true)
@@ -21,8 +26,8 @@ export function useTags(userId) {
       .then((loaded) => {
         if (isActive) setTags(sortByName(loaded))
       })
-      .catch(() => {
-        if (isActive) setTags([])
+      .catch((error) => {
+        if (isActive) setLoadError(error)
       })
       .finally(() => {
         if (isActive) setIsLoading(false)
@@ -31,7 +36,9 @@ export function useTags(userId) {
     return () => {
       isActive = false
     }
-  }, [userId])
+  }, [userId, reloadKey])
+
+  const reload = useCallback(() => setReloadKey((key) => key + 1), [])
 
   const getTagById = useCallback((tagId) => tags.find((tag) => tag.id === tagId), [tags])
 
@@ -56,5 +63,5 @@ export function useTags(userId) {
     [],
   )
 
-  return { tags, isLoading, getTagById, ...actions }
+  return { tags, isLoading, loadError, reload, getTagById, ...actions }
 }

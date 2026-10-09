@@ -13,12 +13,17 @@ import { addTagToSavedRepo, removeTagFromSavedRepo } from '../services/tagsServi
 export function useSavedRepos(userId) {
   const [savedRepos, setSavedRepos] = useState([])
   const [isLoading, setIsLoading] = useState(false)
+  // Si la carga falla guardamos el error para mostrarlo (no una colección vacía engañosa).
+  const [loadError, setLoadError] = useState(null)
+  // Cambiar reloadKey vuelve a lanzar la carga (botón "Reintentar").
+  const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
     let isActive = true
 
     // Al cambiar de usuario, vaciamos la lista anterior antes de cargar la nueva.
     setSavedRepos([])
+    setLoadError(null)
     if (!userId) return
 
     setIsLoading(true)
@@ -26,8 +31,8 @@ export function useSavedRepos(userId) {
       .then((repos) => {
         if (isActive) setSavedRepos(repos)
       })
-      .catch(() => {
-        if (isActive) setSavedRepos([])
+      .catch((error) => {
+        if (isActive) setLoadError(error)
       })
       .finally(() => {
         if (isActive) setIsLoading(false)
@@ -36,7 +41,9 @@ export function useSavedRepos(userId) {
     return () => {
       isActive = false
     }
-  }, [userId])
+  }, [userId, reloadKey])
+
+  const reload = useCallback(() => setReloadKey((key) => key + 1), [])
 
   const savedIds = useMemo(() => new Set(savedRepos.map((repo) => repo.id)), [savedRepos])
 
@@ -99,5 +106,5 @@ export function useSavedRepos(userId) {
     [patchRepo],
   )
 
-  return { savedRepos, isLoading, isSaved, toggleSave, ...trackingActions }
+  return { savedRepos, isLoading, loadError, reload, isSaved, toggleSave, ...trackingActions }
 }
