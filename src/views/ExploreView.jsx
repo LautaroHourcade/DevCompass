@@ -1,13 +1,14 @@
 import { useState } from 'react'
 import SearchBar from '../components/search/SearchBar'
 import FiltersPanel from '../components/search/FiltersPanel'
+import { SelectField } from '../components/search/FilterField'
 import RepoGrid from '../components/repos/RepoGrid'
 import EmptyState from '../components/ui/EmptyState'
 import ErrorMessage from '../components/ui/ErrorMessage'
 import { SearchIcon } from '../components/ui/Icons'
 import { buttonClasses } from '../components/ui/buttonStyles'
 import { useRepositorySearch } from '../hooks/useRepositorySearch'
-import { DEFAULT_FILTERS, DEFAULT_SORT } from '../constants/filters'
+import { DEFAULT_FILTERS, DEFAULT_SORT, SORT_OPTIONS } from '../constants/filters'
 import { formatFullNumber } from '../utils/formatters'
 
 export default function ExploreView({ isSaved, onToggleSave, onOpenDetail }) {
@@ -39,41 +40,53 @@ export default function ExploreView({ isSaved, onToggleSave, onOpenDetail }) {
   }
 
   return (
-    <div className="flex flex-col gap-8">
-      <section aria-labelledby="explore-title" className="flex flex-col gap-5">
-        <header className="flex flex-col gap-2 animate-fade-up">
-          <p className="font-mono text-sm text-accent">
-            <span aria-hidden="true">$ </span>explore --github
+    <div className="flex flex-col gap-10">
+      <section aria-labelledby="explore-title" className="relative isolate z-20 flex flex-col gap-6">
+        {/* Retícula de puntos tras el titular: el "papel milimetrado" de la brújula */}
+        <div aria-hidden="true" className="dot-grid pointer-events-none absolute -inset-x-6 -top-12 bottom-0 -z-10" />
+
+        <header className="flex flex-col gap-4 pt-2 sm:pt-6">
+          <p className="flex items-center gap-3 font-mono text-2xs tracking-[0.14em] text-muted uppercase animate-fade-up">
+            <span className="text-accent">000°</span>
+            <span>Explorar GitHub</span>
+            <span aria-hidden="true" className="ruler max-w-[24rem] min-w-[4rem] flex-1" />
           </p>
-          <h1 id="explore-title" className="text-3xl font-bold tracking-tight text-balance sm:text-4xl">
-            Descubre repositorios que merecen tu atención
+          <h1
+            id="explore-title"
+            style={{ animationDelay: '40ms' }}
+            className="max-w-[80rem] text-4xl leading-[1.05] font-semibold tracking-[-0.04em] animate-fade-up sm:text-5xl"
+          >
+            Encuentra el próximo repositorio <span className="text-muted">que vale la pena seguir.</span>
           </h1>
-          <p className="max-w-[64rem] text-base text-muted">
-            Busca entre millones de proyectos de GitHub, filtra los que te interesan y guárdalos para
-            seguirlos más tarde.
+          <p style={{ animationDelay: '80ms' }} className="max-w-[56rem] text-base text-muted animate-fade-up sm:text-lg">
+            Busca entre millones de proyectos, filtra lo que te interesa y guárdalo para seguir su evolución día a día.
           </p>
         </header>
 
-        <SearchBar value={text} onChange={setText} />
-
-        <FiltersPanel
-          filters={filters}
-          sort={sort}
-          onFilterChange={handleFilterChange}
-          onSortChange={setSort}
-          onReset={handleReset}
-          hasActiveFilters={hasActiveFilters}
-        />
+        <div style={{ animationDelay: '120ms' }} className="flex flex-col gap-3 animate-fade-up">
+          <SearchBar value={text} onChange={setText} />
+          <FiltersPanel filters={filters} onFilterChange={handleFilterChange} onReset={handleReset} />
+        </div>
       </section>
 
       <section aria-labelledby="results-title" className="flex flex-col gap-4">
-        <header className="flex items-baseline justify-between gap-4">
-          <h2 id="results-title" className="font-mono text-lg font-semibold">
-            {isSearching ? 'Resultados' : 'Populares en GitHub'}
-          </h2>
-          <p aria-live="polite" className="text-sm text-muted">
-            {getResultsSummary(status, totalCount)}
-          </p>
+        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-line pb-3">
+          <div className="flex items-baseline gap-3">
+            <h2 id="results-title" className="text-lg font-semibold tracking-[-0.02em]">
+              {isSearching ? 'Resultados' : 'Populares en GitHub'}
+            </h2>
+            <p aria-live="polite" className="font-mono text-xs text-muted tabular-nums">
+              {getResultsSummary(status, totalCount)}
+            </p>
+          </div>
+          <SelectField
+            id="filter-sort"
+            label="Ordenar"
+            value={sort}
+            options={SORT_OPTIONS}
+            onChange={setSort}
+            className="w-full min-[480px]:w-[26rem]"
+          />
         </header>
 
         <ResultsContent
@@ -92,7 +105,7 @@ export default function ExploreView({ isSaved, onToggleSave, onOpenDetail }) {
             type="button"
             onClick={handleLoadMore}
             disabled={status === 'loading-more'}
-            className={buttonClasses({ className: 'self-center' })}
+            className={buttonClasses({ className: 'mt-2 self-center' })}
           >
             {status === 'loading-more' ? 'Cargando…' : 'Cargar más repositorios'}
           </button>

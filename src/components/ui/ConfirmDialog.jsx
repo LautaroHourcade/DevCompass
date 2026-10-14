@@ -54,7 +54,7 @@ export default function ConfirmDialog({
     <Modal isOpen={isOpen} onClose={handleClose} labelledBy={titleId}>
       <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
         <header className="flex items-start gap-3">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-danger/10 text-danger">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-danger/10 text-danger">
             <AlertIcon className="size-5" />
           </span>
           <div className="flex flex-col gap-1">

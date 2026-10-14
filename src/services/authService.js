@@ -89,6 +89,15 @@ export function getDisplayName(user) {
   return user?.user_metadata?.full_name || user?.email?.split('@')[0] || ''
 }
 
+/** Iniciales para el avatar: "Ada Lovelace" -> "AL", "ada.lovelace" -> "AL", "ada" -> "A". */
+export function getInitials(name) {
+  const words = name.split(/[\s@._-]+/).filter(Boolean)
+  return words
+    .slice(0, 2)
+    .map((word) => word[0].toUpperCase())
+    .join('')
+}
+
 /** Envía un código de un solo uso al email del usuario para confirmar que es él. */
 export async function sendPasswordChangeCode() {
   const { error } = await supabase.auth.reauthenticate()

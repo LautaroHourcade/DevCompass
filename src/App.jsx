@@ -19,6 +19,8 @@ const SavedView = lazy(() => import('./views/SavedView'))
 const ListsView = lazy(() => import('./views/ListsView'))
 const ListDetailView = lazy(() => import('./views/ListDetailView'))
 const TagsView = lazy(() => import('./views/TagsView'))
+const DashboardView = lazy(() => import('./views/DashboardView'))
+const CompareView = lazy(() => import('./views/CompareView'))
 const LoginView = lazy(() => import('./views/LoginView'))
 const RegisterView = lazy(() => import('./views/RegisterView'))
 const ProfileView = lazy(() => import('./views/ProfileView'))
@@ -104,6 +106,15 @@ export default function App() {
     [forgetTag, refreshListsSafely],
   )
 
+  // Lo que necesitan las pantallas que solo leen la colección (Panel y Comparar).
+  const collectionProps = {
+    savedRepos,
+    isLoading: isLoadingSaved,
+    savedLoadError,
+    onReloadSaved: reloadSaved,
+    onOpenDetail: setSelectedRepo,
+  }
+
   const repoGridProps = {
     savedRepos,
     savedLoadError,
@@ -132,7 +143,7 @@ export default function App() {
         onSignOut={handleSignOut}
       />
 
-      <main id="main" className="mx-auto min-h-[calc(100vh-14rem)] max-w-page px-4 py-8 sm:px-6 sm:py-12">
+      <main id="main" className="mx-auto min-h-[calc(100vh-14rem)] max-w-page overflow-x-clip px-4 py-8 sm:px-6 sm:py-12">
         {/* Explorar se oculta en lugar de desmontarse para conservar la búsqueda */}
         <div hidden={!isExploreRoute}>
           <ExploreView isSaved={isSaved} onToggleSave={handleToggleSave} onOpenDetail={setSelectedRepo} />
@@ -148,6 +159,8 @@ export default function App() {
             </Route>
 
             <Route element={<ProtectedRoute />}>
+              <Route path="/panel" element={<DashboardView {...collectionProps} />} />
+              <Route path="/comparar" element={<CompareView {...collectionProps} />} />
               <Route
                 path="/guardados"
                 element={

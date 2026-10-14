@@ -1,13 +1,11 @@
 import { NumberField, SelectField } from './FilterField'
-import { FilterIcon } from '../ui/Icons'
-import {
-  LANGUAGE_OPTIONS,
-  LICENSE_OPTIONS,
-  SORT_OPTIONS,
-  UPDATED_WITHIN_OPTIONS,
-} from '../../constants/filters'
+import { ResetIcon } from '../ui/Icons'
+import { LANGUAGE_OPTIONS, LICENSE_OPTIONS, UPDATED_WITHIN_OPTIONS } from '../../constants/filters'
 
-export default function FiltersPanel({ filters, sort, onFilterChange, onSortChange, onReset, hasActiveFilters }) {
+/** Barra compacta de filtros bajo el buscador. La ordenación vive en la cabecera de resultados. */
+export default function FiltersPanel({ filters, onFilterChange, onReset }) {
+  const activeCount = Object.values(filters).filter(Boolean).length
+
   // Los filtros se aplican al momento; el formulario no se envía nunca.
   function handleSubmit(event) {
     event.preventDefault()
@@ -20,26 +18,10 @@ export default function FiltersPanel({ filters, sort, onFilterChange, onSortChan
 
   return (
     <form onSubmit={handleSubmit} aria-label="Filtros de búsqueda">
-      <fieldset className="rounded-xl border border-line bg-surface p-4 sm:p-5">
+      <fieldset className="flex flex-col gap-2.5">
         <legend className="sr-only">Filtrar repositorios</legend>
 
-        <div className="mb-4 flex min-h-8 items-center justify-between gap-2">
-          <p className="flex items-center gap-2 font-mono text-xs font-semibold tracking-wider text-muted uppercase">
-            <FilterIcon className="size-4 text-accent" />
-            Filtros
-          </p>
-          {hasActiveFilters && (
-            <button
-              type="button"
-              onClick={handleReset}
-              className="cursor-pointer rounded-md px-2 py-1 text-xs font-medium text-accent transition-colors hover:bg-accent-soft animate-fade-in"
-            >
-              Limpiar filtros
-            </button>
-          )}
-        </div>
-
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:flex lg:flex-wrap">
           <SelectField
             id="filter-language"
             label="Lenguaje"
@@ -47,28 +29,32 @@ export default function FiltersPanel({ filters, sort, onFilterChange, onSortChan
             options={LANGUAGE_OPTIONS}
             placeholder="Todos"
             onChange={(value) => onFilterChange('language', value)}
+            className="lg:w-[19rem]"
           />
           <NumberField
             id="filter-stars"
-            label="Stars mínimas"
+            label="Stars ≥"
             value={filters.minStars}
-            placeholder="Ej: 500"
+            placeholder="500"
             onChange={(value) => onFilterChange('minStars', value)}
+            className="lg:w-[15rem]"
           />
           <NumberField
             id="filter-forks"
-            label="Forks mínimos"
+            label="Forks ≥"
             value={filters.minForks}
-            placeholder="Ej: 50"
+            placeholder="50"
             onChange={(value) => onFilterChange('minForks', value)}
+            className="lg:w-[15rem]"
           />
           <SelectField
             id="filter-updated"
             label="Actualizado"
             value={filters.updatedWithin}
             options={UPDATED_WITHIN_OPTIONS}
-            placeholder="Cualquier fecha"
+            placeholder="Siempre"
             onChange={(value) => onFilterChange('updatedWithin', value)}
+            className="lg:w-[22rem]"
           />
           <SelectField
             id="filter-license"
@@ -77,14 +63,20 @@ export default function FiltersPanel({ filters, sort, onFilterChange, onSortChan
             options={LICENSE_OPTIONS}
             placeholder="Cualquiera"
             onChange={(value) => onFilterChange('license', value)}
+            className="lg:w-[20rem]"
           />
-          <SelectField
-            id="filter-sort"
-            label="Ordenar por"
-            value={sort}
-            options={SORT_OPTIONS}
-            onChange={onSortChange}
-          />
+
+          {activeCount > 0 && (
+            <button
+              type="button"
+              onClick={handleReset}
+              className="flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg px-3 text-sm font-medium text-muted transition-[color,background-color,scale] duration-150 hover:bg-surface-2 hover:text-fg active:scale-[0.97] animate-fade-in"
+            >
+              <ResetIcon className="size-3.5" />
+              Limpiar
+              <span className="font-mono text-xs text-accent tabular-nums">{activeCount}</span>
+            </button>
+          )}
         </div>
       </fieldset>
     </form>

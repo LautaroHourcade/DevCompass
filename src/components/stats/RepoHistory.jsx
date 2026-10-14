@@ -17,7 +17,7 @@ export default function RepoHistory({ githubId }) {
 
   return (
     <section aria-labelledby="repo-history-title" className="flex flex-col gap-3">
-      <h3 id="repo-history-title" className="font-mono text-sm font-semibold uppercase tracking-wider text-muted">
+      <h3 id="repo-history-title" className="font-mono text-2xs tracking-[0.14em] text-muted uppercase">
         Evolución
       </h3>
       <HistoryContent status={status} snapshots={snapshots} error={error} onRetry={reload} />
@@ -50,18 +50,19 @@ function HistoryContent({ status, snapshots, error, onRetry }) {
 
   return (
     <>
-      <div className="flex flex-col gap-2 rounded-lg border border-line bg-canvas p-3">
-        <p className="text-xs text-muted">
-          Última captura:{' '}
-          <time dateTime={latest.capturedAt} className="font-medium text-fg">
+      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 rounded-xl border border-line bg-canvas px-4 py-3">
+        <p className="flex items-center gap-2 text-xs text-muted">
+          <span aria-hidden="true" className="size-1.5 rounded-full bg-accent" />
+          Última captura{' '}
+          <time dateTime={latest.capturedAt} className="font-mono text-fg tabular-nums">
             {formatDateTime(latest.capturedAt)}
           </time>
         </p>
-        <dl className="flex flex-wrap gap-x-5 gap-y-1 font-mono text-sm">
+        <dl className="flex flex-wrap gap-x-5 gap-y-1 font-mono text-sm tabular-nums">
           {latestStats.map(({ label, value, Icon, iconClass }) => (
             <div key={label} className="flex items-center gap-1.5">
               <dt className="flex items-center">
-                <Icon className={`size-4 ${iconClass}`} />
+                <Icon className={`size-3.5 ${iconClass}`} />
                 <span className="sr-only">{label}</span>
               </dt>
               <dd>{formatFullNumber(value)}</dd>
@@ -76,7 +77,7 @@ function HistoryContent({ status, snapshots, error, onRetry }) {
           DevCompass registra una al día, así que mañana podrás ver cómo evolucionan las stars y los forks.
         </FormAlert>
       ) : (
-        <div className="flex flex-col gap-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           <LineChart
             title="Stars"
             label="Stars"

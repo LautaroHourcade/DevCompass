@@ -6,12 +6,12 @@ import RepoGrid from '../components/repos/RepoGrid'
 import TagPickerDialog from '../components/tags/TagPickerDialog'
 import NoteDialog from '../components/tracking/NoteDialog'
 import RepoTracking from '../components/tracking/RepoTracking'
-import SavedFilters, { EMPTY_SAVED_FILTERS } from '../components/tracking/SavedFilters'
+import SavedFilters from '../components/tracking/SavedFilters'
 import EmptyState from '../components/ui/EmptyState'
 import ErrorMessage from '../components/ui/ErrorMessage'
-import { BookmarkIcon, FilterIcon, ListIcon, TagIcon } from '../components/ui/Icons'
+import { BookmarkIcon, CompareIcon, FilterIcon, ListIcon, TagIcon } from '../components/ui/Icons'
 import { buttonClasses } from '../components/ui/buttonStyles'
-import { getStatusOption } from '../constants/repoStatus'
+import { EMPTY_SAVED_FILTERS, getStatusOption } from '../constants/repoStatus'
 import { useToast } from '../hooks/useToast'
 
 /**
@@ -210,11 +210,18 @@ export default function SavedView({
   return (
     <section aria-labelledby="saved-title" className="flex flex-col gap-6">
       <PageHeader
-        command="ls ~/guardados"
+        eyebrow="Tu colección"
         title="Tus repositorios guardados"
         titleId="saved-title"
         description={getDescription()}
-      />
+      >
+        {savedRepos.length >= 2 && (
+          <Link to="/comparar" className={buttonClasses()}>
+            <CompareIcon className="size-4" />
+            Comparar
+          </Link>
+        )}
+      </PageHeader>
 
       {renderContent()}
 

@@ -3,12 +3,12 @@ export default function ProfileSection({ title, titleId, description, danger = f
   return (
     <section
       aria-labelledby={titleId}
-      className={`flex flex-col gap-5 rounded-2xl border bg-surface p-6 animate-fade-up sm:p-8 ${
-        danger ? 'border-danger/40' : 'border-line'
+      className={`flex flex-col gap-5 rounded-xl border bg-surface p-5 shadow-card animate-fade-up sm:p-7 ${
+        danger ? 'border-danger/35' : 'border-line'
       }`}
     >
       <header className="flex flex-col gap-1">
-        <h2 id={titleId} className={`text-xl font-semibold ${danger ? 'text-danger' : ''}`}>
+        <h2 id={titleId} className={`text-lg font-semibold tracking-[-0.02em] ${danger ? 'text-danger' : ''}`}>
           {title}
         </h2>
         {description && <p className="text-sm text-muted">{description}</p>}

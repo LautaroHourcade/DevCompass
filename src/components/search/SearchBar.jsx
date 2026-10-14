@@ -1,8 +1,29 @@
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { CloseIcon, SearchIcon } from '../ui/Icons'
 
+// Elementos donde "/" se escribe con normalidad en lugar de saltar al buscador.
+const EDITABLE_TAGS = ['INPUT', 'TEXTAREA', 'SELECT']
+
+/** Buscador principal con aspecto de barra de comandos. Atajo: "/" lo enfoca desde cualquier parte. */
 export default function SearchBar({ value, onChange }) {
   const inputRef = useRef(null)
+
+  useEffect(() => {
+    function handleKeyDown(event) {
+      const target = event.target
+      const isTyping = EDITABLE_TAGS.includes(target.tagName) || target.isContentEditable
+      const isDialogOpen = Boolean(document.querySelector('dialog[open]'))
+      // El buscador puede estar oculto (otra pantalla): entonces no tiene tamaño.
+      const isVisible = inputRef.current?.offsetParent !== null
+
+      if (event.key !== '/' || isTyping || isDialogOpen || !isVisible || event.metaKey || event.ctrlKey) return
+      event.preventDefault()
+      inputRef.current.focus()
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [])
 
   // La búsqueda ya se lanza sola mientras se escribe; Enter solo cierra el teclado en móvil.
   function handleSubmit(event) {
@@ -17,30 +38,39 @@ export default function SearchBar({ value, onChange }) {
   }
 
   return (
-    <form role="search" onSubmit={handleSubmit} className="relative">
+    <form role="search" onSubmit={handleSubmit} className="group relative">
       <label htmlFor="repo-search" className="sr-only">
         Buscar repositorios
       </label>
-      <SearchIcon className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-muted" />
+      <SearchIcon className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-muted transition-colors duration-150 group-focus-within:text-accent" />
       <input
         ref={inputRef}
         id="repo-search"
         type="search"
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        placeholder="Busca por nombre, tema o descripción (ej: react, machine learning)"
+        placeholder="Busca por nombre, tema o descripción…"
         autoComplete="off"
-        className="h-14 w-full rounded-xl border border-line bg-surface pr-12 pl-12 text-base shadow-sm transition-[border-color,box-shadow] placeholder:text-muted/70 focus:border-accent focus:ring-4 focus:ring-accent/15 focus:outline-none"
+        spellCheck="false"
+        className="h-14 w-full rounded-xl border border-line-strong bg-surface pr-14 pl-12 text-base text-fg shadow-card transition-[border-color,box-shadow] duration-150 ease-out placeholder:text-subtle hover:border-[color-mix(in_oklab,var(--color-fg),transparent_70%)] focus:border-accent focus:ring-4 focus:ring-accent-soft focus:outline-none"
       />
-      {value && (
+      {value ? (
         <button
           type="button"
           onClick={handleClear}
           aria-label="Borrar búsqueda"
-          className="absolute top-1/2 right-3 -translate-y-1/2 cursor-pointer rounded-md p-1.5 text-muted transition-colors hover:bg-surface-2 hover:text-fg"
+          className="absolute top-1/2 right-3 flex size-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-md text-muted transition-[background-color,color,scale] duration-150 hover:bg-surface-2 hover:text-fg active:scale-[0.94]"
         >
           <CloseIcon className="size-4" />
         </button>
+      ) : (
+        <kbd
+          aria-hidden="true"
+          title="Pulsa / para buscar"
+          className="kbd pointer-events-none absolute top-1/2 right-4 hidden -translate-y-1/2 sm:inline-flex"
+        >
+          /
+        </kbd>
       )}
     </form>
   )

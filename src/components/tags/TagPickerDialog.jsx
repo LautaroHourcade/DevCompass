@@ -92,7 +92,7 @@ export default function TagPickerDialog({ subtitle, selectedTagIds, tags, onAdd,
                 <label
                   key={tag.id}
                   className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors ${
-                    hasTag ? 'border-purple/50 bg-purple/10' : 'border-line hover:border-purple/40'
+                    hasTag ? 'border-accent/50 bg-accent-soft' : 'border-line-strong hover:border-accent/40'
                   } ${isPending ? 'opacity-60' : ''}`}
                 >
                   <input
@@ -105,7 +105,7 @@ export default function TagPickerDialog({ subtitle, selectedTagIds, tags, onAdd,
                   <span
                     aria-hidden="true"
                     className={`flex size-5 items-center justify-center rounded border transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-accent ${
-                      hasTag ? 'border-purple bg-purple text-surface' : 'border-line'
+                      hasTag ? 'border-accent bg-accent text-on-accent' : 'border-line-strong'
                     }`}
                   >
                     {hasTag && <CheckIcon className="size-3.5" strokeWidth={3} />}

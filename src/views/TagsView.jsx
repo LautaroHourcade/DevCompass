@@ -67,7 +67,7 @@ export default function TagsView({ tagsState, savedRepos, lists, onTagDeleted })
   return (
     <section aria-labelledby="tags-title" className="flex flex-col gap-6">
       <PageHeader
-        command="ls ~/etiquetas"
+        eyebrow="Clasificación"
         title="Tus etiquetas"
         titleId="tags-title"
         description="Clasifica tus repositorios guardados y tus listas por tecnología, tema o como prefieras."
@@ -87,20 +87,20 @@ export default function TagsView({ tagsState, savedRepos, lists, onTagDeleted })
           action={createButton}
         />
       ) : (
-        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {tags.map((tag, index) => {
             return (
               <li
                 key={tag.id}
-                style={{ animationDelay: `${Math.min(index, 12) * 30}ms` }}
-                className="flex items-center gap-3 rounded-xl border border-line bg-surface p-4 transition-colors animate-fade-up hover:border-purple/50"
+                style={{ animationDelay: `${(index % 8) * 40}ms` }}
+                className="flex items-center gap-3 rounded-xl border border-line bg-surface p-3 pl-4 shadow-card transition-[border-color] duration-150 animate-fade-up hover:border-line-strong"
               >
-                <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-purple/10 text-purple">
-                  <TagIcon className="size-4" />
+                <span aria-hidden="true" className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-line-strong bg-surface-2 font-mono text-base text-accent">
+                  #
                 </span>
                 <div className="min-w-0 flex-1">
-                  <h2 className="truncate font-mono text-base font-semibold">{tag.name}</h2>
-                  <p className="text-xs text-muted">
+                  <h2 className="truncate font-mono text-base font-medium">{tag.name}</h2>
+                  <p className="font-mono text-xs text-muted tabular-nums">
                     {describeUsage(countReposWithTag(tag.id), countListsWithTag(tag.id))}
                   </p>
                 </div>

@@ -1,9 +1,9 @@
 import { AlertIcon, CheckIcon, InfoIcon } from './Icons'
 
 const STYLES = {
-  error: { Icon: AlertIcon, classes: 'border-danger/40 bg-danger/5 [&>svg]:text-danger', role: 'alert' },
-  success: { Icon: CheckIcon, classes: 'border-accent/40 bg-accent-soft [&>svg]:text-accent', role: 'status' },
-  info: { Icon: InfoIcon, classes: 'border-info/40 bg-info/5 [&>svg]:text-info', role: 'status' },
+  error: { Icon: AlertIcon, classes: 'border-danger/35 bg-danger/5 [&>svg]:text-danger', role: 'alert' },
+  success: { Icon: CheckIcon, classes: 'border-accent/35 bg-accent-soft [&>svg]:text-accent', role: 'status' },
+  info: { Icon: InfoIcon, classes: 'border-line-strong bg-surface-2/60 text-muted [&>svg]:text-info', role: 'status' },
 }
 
 /** Mensaje dentro de un formulario (error, éxito o información). type: 'error' | 'success' | 'info' */

@@ -7,8 +7,8 @@ import {
   CalendarIcon,
   ClockIcon,
   CloseIcon,
-  ExternalLinkIcon,
   ForkIcon,
+  GitHubIcon,
   IssueIcon,
   LicenseIcon,
   LinkIcon,
@@ -21,13 +21,17 @@ import { formatDate, formatFullNumber, formatRelativeDate } from '../../utils/fo
 const TITLE_ID = 'repo-detail-title'
 
 export default function RepoDetailModal({ repo, onClose, isSaved, onToggleSave }) {
+  // Mientras el modal se cierra (animación de salida) seguimos mostrando el último repositorio.
+  const [shownRepo, setShownRepo] = useState(repo)
+  if (repo && repo !== shownRepo) setShownRepo(repo)
+
   return (
-    <Modal isOpen={Boolean(repo)} onClose={onClose} labelledBy={TITLE_ID}>
-      {repo && (
+    <Modal isOpen={Boolean(repo)} onClose={onClose} labelledBy={TITLE_ID} size="lg">
+      {shownRepo && (
         // key: al cambiar de repositorio el detalle se monta de nuevo con su propio estado.
         <RepoDetail
-          key={repo.id}
-          repo={repo}
+          key={shownRepo.id}
+          repo={shownRepo}
           onClose={onClose}
           isSaved={isSaved}
           onToggleSave={onToggleSave}
@@ -36,6 +40,8 @@ export default function RepoDetailModal({ repo, onClose, isSaved, onToggleSave }
     </Modal>
   )
 }
+
+const SECTION_TITLE_CLASSES = 'font-mono text-2xs tracking-[0.14em] text-muted uppercase'
 
 function RepoDetail({ repo, onClose, isSaved, onToggleSave }) {
   const languagesState = useRepositoryLanguages(repo.id)
@@ -47,35 +53,35 @@ function RepoDetail({ repo, onClose, isSaved, onToggleSave }) {
   }
 
   const stats = [
-    { label: 'Stars', value: formatFullNumber(repo.stars), Icon: StarIcon, iconClass: 'text-star' },
-    { label: 'Forks', value: formatFullNumber(repo.forks), Icon: ForkIcon, iconClass: 'text-purple' },
-    { label: 'Issues abiertos', value: formatFullNumber(repo.openIssues), Icon: IssueIcon, iconClass: 'text-info' },
-    { label: 'Licencia', value: repo.license ?? 'Sin licencia', Icon: LicenseIcon, iconClass: 'text-muted' },
-    { label: 'Última actualización', value: formatRelativeDate(repo.updatedAt), Icon: ClockIcon, iconClass: 'text-muted' },
-    { label: 'Creado', value: formatDate(repo.createdAt), Icon: CalendarIcon, iconClass: 'text-muted' },
+    { label: 'Stars', value: formatFullNumber(repo.stars), Icon: StarIcon, iconClass: 'text-star', isNumber: true },
+    { label: 'Forks', value: formatFullNumber(repo.forks), Icon: ForkIcon, iconClass: 'text-purple', isNumber: true },
+    { label: 'Issues abiertos', value: formatFullNumber(repo.openIssues), Icon: IssueIcon, iconClass: 'text-info', isNumber: true },
+    { label: 'Licencia', value: repo.license ?? 'Sin licencia', Icon: LicenseIcon, iconClass: 'text-subtle' },
+    { label: 'Actualizado', value: formatRelativeDate(repo.updatedAt), Icon: ClockIcon, iconClass: 'text-subtle' },
+    { label: 'Creado', value: formatDate(repo.createdAt), Icon: CalendarIcon, iconClass: 'text-subtle' },
   ]
 
   return (
-    <article className="flex flex-col gap-6">
+    <article className="flex flex-col gap-7">
       <header className="flex items-start gap-4">
         <img
           src={repo.owner.avatarUrl}
           alt=""
-          width="48"
-          height="48"
-          className="size-12 rounded-full border border-line bg-surface-2"
+          width="52"
+          height="52"
+          className="size-13 shrink-0 rounded-xl border border-line bg-surface-2"
         />
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1 pt-0.5">
           <a
             href={repo.owner.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm text-muted transition-colors hover:text-accent"
+            className="text-sm text-muted transition-colors duration-150 hover:text-accent"
           >
             <span className="sr-only">Autor: </span>
             {repo.owner.login}
           </a>
-          <h2 id={TITLE_ID} className="break-words font-mono text-2xl font-bold">
+          <h2 id={TITLE_ID} className="text-2xl leading-tight font-semibold tracking-[-0.03em] break-words sm:text-3xl">
             {repo.name}
           </h2>
         </div>
@@ -83,41 +89,39 @@ function RepoDetail({ repo, onClose, isSaved, onToggleSave }) {
           type="button"
           onClick={handleClose}
           aria-label="Cerrar detalle"
-          className={buttonClasses({ variant: 'ghost', size: 'icon' })}
+          className={buttonClasses({ variant: 'ghost', size: 'icon', className: '-mt-1 -mr-1' })}
         >
           <CloseIcon className="size-5" />
         </button>
       </header>
 
-      <p className="text-base">{repo.description || 'Este repositorio no tiene descripción.'}</p>
+      <p className="-mt-2 text-base text-muted">{repo.description || 'Este repositorio no tiene descripción.'}</p>
 
       {repo.topics.length > 0 && (
-        <ul aria-label="Temas" className="flex flex-wrap gap-2">
+        <ul aria-label="Temas" className="-mt-2 flex flex-wrap gap-1.5">
           {repo.topics.map((topic) => (
-            <li
-              key={topic}
-              className="rounded-full bg-accent-soft px-3 py-1 font-mono text-xs text-accent"
-            >
+            <li key={topic} className="rounded-md bg-accent-soft px-2 py-0.5 font-mono text-xs text-accent">
               {topic}
             </li>
           ))}
         </ul>
       )}
 
-      <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        {stats.map(({ label, value, Icon, iconClass }) => (
-          <div key={label} className="rounded-lg border border-line bg-canvas p-3">
-            <dt className="flex items-center gap-1.5 text-xs text-muted">
-              <Icon className={`size-3.5 ${iconClass}`} />
+      {/* Panel de lecturas: una sola caja dividida en celdas, como la esfera de un instrumento */}
+      <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-3">
+        {stats.map(({ label, value, Icon, iconClass, isNumber }) => (
+          <div key={label} className="flex flex-col gap-1.5 bg-raised p-4">
+            <dt className="flex items-center gap-1.5 font-mono text-2xs tracking-[0.08em] text-subtle uppercase">
+              <Icon className={`size-3 ${iconClass}`} />
               {label}
             </dt>
-            <dd className="mt-1 truncate font-mono text-base font-semibold">{value}</dd>
+            <dd className={`truncate text-lg font-medium ${isNumber ? 'font-mono tabular-nums' : ''}`}>{value}</dd>
           </div>
         ))}
       </dl>
 
       <section aria-labelledby="repo-languages-title" className="flex flex-col gap-3">
-        <h3 id="repo-languages-title" className="font-mono text-sm font-semibold uppercase tracking-wider text-muted">
+        <h3 id="repo-languages-title" className={SECTION_TITLE_CLASSES}>
           Lenguajes
         </h3>
         <LanguagesContent state={languagesState} />
@@ -126,27 +130,17 @@ function RepoDetail({ repo, onClose, isSaved, onToggleSave }) {
       {/* El historial solo existe para repositorios que DevCompass sigue (guardados por el usuario). */}
       {isRepoSaved && <RepoHistory githubId={repo.id} />}
 
-      <footer className="flex flex-col-reverse gap-2 border-t border-line pt-5 sm:flex-row sm:justify-end">
+      <footer className="sticky bottom-0 -mx-5 -mb-5 flex flex-col-reverse gap-2 border-t border-line bg-raised/90 px-5 py-4 backdrop-blur-md sm:-mx-7 sm:-mb-7 sm:flex-row sm:justify-end sm:px-7">
         <SaveButton repo={repo} isSaved={isRepoSaved} onToggleSave={onToggleSave} />
         {repo.homepage && (
-          <a
-            href={repo.homepage}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={buttonClasses()}
-          >
+          <a href={repo.homepage} target="_blank" rel="noopener noreferrer" className={buttonClasses()}>
             <LinkIcon className="size-4" />
             Web del proyecto
           </a>
         )}
-        <a
-          href={repo.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={buttonClasses({ variant: 'primary' })}
-        >
+        <a href={repo.url} target="_blank" rel="noopener noreferrer" className={buttonClasses({ variant: 'primary' })}>
+          <GitHubIcon className="size-4" />
           Abrir en GitHub
-          <ExternalLinkIcon className="size-4" />
           <span className="sr-only">(se abre en una pestaña nueva)</span>
         </a>
       </footer>

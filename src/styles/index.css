@@ -5,42 +5,64 @@
 
 /* ---------------------------------------------------------------------------
    Colores semánticos: cambian solos entre modo claro y oscuro.
-   Paleta inspirada en editores de código y terminales.
+   Identidad "instrumento de navegación": papel cálido / tinta azul-negra
+   y un único acento lima, como la aguja luminosa de una brújula.
+
+   - accent: texto, bordes y puntos de acento (en claro es oliva para que se lea sobre el papel).
+   - lime: relleno de la acción principal; siempre lleva texto oscuro (on-lime).
    ------------------------------------------------------------------------- */
 :root {
-  --c-canvas: #f6f8fa;
+  --c-canvas: #f5f4ef;
   --c-surface: #ffffff;
-  --c-surface-2: #eef1f4;
-  --c-border: #d0d7de;
-  --c-fg: #1f2328;
-  --c-muted: #59636e;
-  --c-accent: #1a7f37;
-  --c-accent-soft: #dafbe1;
+  --c-surface-2: #eceae3;
+  --c-raised: #ffffff;
+  --c-border: rgb(20 22 27 / 0.1);
+  --c-border-strong: rgb(20 22 27 / 0.17);
+  --c-fg: #14161b;
+  --c-muted: #5b6068;
+  --c-subtle: #8b8f96;
+  --c-accent: #4a7a0c;
+  --c-accent-soft: rgb(110 160 20 / 0.12);
   --c-on-accent: #ffffff;
-  --c-purple: #8250df;
-  --c-info: #0969da;
-  --c-star: #9a6700;
-  --c-danger: #cf222e;
-  --c-overlay: rgb(31 35 40 / 0.5);
+  --c-lime: #c8f25a;
+  --c-on-lime: #0b0d12;
+  --c-purple: #6b4fd1;
+  --c-info: #1f6fc9;
+  --c-star: #a35f00;
+  --c-danger: #cc3333;
+  --c-overlay: rgb(20 22 27 / 0.32);
+  --c-highlight: rgb(255 255 255 / 0);
+  --c-shadow-card: 0 1px 2px rgb(20 22 27 / 0.04);
+  --c-shadow-pop: 0 1px 2px rgb(20 22 27 / 0.06), 0 12px 32px -8px rgb(20 22 27 / 0.18);
+  --c-grid-dot: rgb(20 22 27 / 0.13);
 
   color-scheme: light;
 }
 
 .dark {
-  --c-canvas: #0d1117;
-  --c-surface: #161b22;
-  --c-surface-2: #1f2630;
-  --c-border: #30363d;
-  --c-fg: #e6edf3;
-  --c-muted: #8b949e;
-  --c-accent: #3fb950;
-  --c-accent-soft: #12261e;
-  --c-on-accent: #0d1117;
-  --c-purple: #bc8cff;
-  --c-info: #58a6ff;
-  --c-star: #d29922;
-  --c-danger: #f85149;
-  --c-overlay: rgb(1 4 9 / 0.7);
+  --c-canvas: #0b0d12;
+  --c-surface: #111419;
+  --c-surface-2: #181c23;
+  --c-raised: #1a1e26;
+  --c-border: rgb(255 255 255 / 0.075);
+  --c-border-strong: rgb(255 255 255 / 0.13);
+  --c-fg: #e8eaed;
+  --c-muted: #8b929d;
+  --c-subtle: #5f6671;
+  --c-accent: #c8f25a;
+  --c-accent-soft: rgb(200 242 90 / 0.1);
+  --c-on-accent: #0b0d12;
+  --c-lime: #c8f25a;
+  --c-on-lime: #0b0d12;
+  --c-purple: #b19cff;
+  --c-info: #6cb4ff;
+  --c-star: #e9b949;
+  --c-danger: #ff6b6b;
+  --c-overlay: rgb(3 4 7 / 0.66);
+  --c-highlight: rgb(255 255 255 / 0.045);
+  --c-shadow-card: 0 1px 2px rgb(0 0 0 / 0.3);
+  --c-shadow-pop: 0 1px 2px rgb(0 0 0 / 0.4), 0 16px 40px -8px rgb(0 0 0 / 0.6);
+  --c-grid-dot: rgb(255 255 255 / 0.09);
 
   color-scheme: dark;
 }
@@ -52,35 +74,45 @@
   --color-canvas: var(--c-canvas);
   --color-surface: var(--c-surface);
   --color-surface-2: var(--c-surface-2);
+  --color-raised: var(--c-raised);
   --color-line: var(--c-border);
+  --color-line-strong: var(--c-border-strong);
   --color-fg: var(--c-fg);
   --color-muted: var(--c-muted);
+  --color-subtle: var(--c-subtle);
   --color-accent: var(--c-accent);
   --color-accent-soft: var(--c-accent-soft);
   --color-on-accent: var(--c-on-accent);
+  --color-lime: var(--c-lime);
+  --color-on-lime: var(--c-on-lime);
   --color-purple: var(--c-purple);
   --color-info: var(--c-info);
   --color-star: var(--c-star);
   --color-danger: var(--c-danger);
   --color-overlay: var(--c-overlay);
+
+  /* Sombra de tarjeta con un brillo de 1px arriba (en oscuro simula el canto iluminado). */
+  --shadow-card: inset 0 1px 0 var(--c-highlight), var(--c-shadow-card);
+  --shadow-pop: inset 0 1px 0 var(--c-highlight), var(--c-shadow-pop);
 }
 
 @theme {
-  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-mono: ui-monospace, "Cascadia Code", "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  --font-sans: "Geist Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "Geist Mono Variable", ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
 
   /* p-1 = 0.4rem = 4px, p-4 = 16px... */
   --spacing: 0.4rem;
 
+  --text-2xs: 1.1rem;
   --text-xs: 1.2rem;
   --text-sm: 1.4rem;
-  --text-base: 1.6rem;
-  --text-lg: 1.8rem;
+  --text-base: 1.5rem;
+  --text-lg: 1.7rem;
   --text-xl: 2rem;
   --text-2xl: 2.4rem;
   --text-3xl: 3rem;
-  --text-4xl: 3.6rem;
-  --text-5xl: 4.8rem;
+  --text-4xl: 3.8rem;
+  --text-5xl: 5rem;
 
   --radius-sm: 0.4rem;
   --radius-md: 0.6rem;
@@ -90,15 +122,25 @@
 
   --container-*: initial;
   --container-modal: 72rem;
-  --container-page: 128rem;
+  --container-page: 124rem;
 
-  --animate-fade-up: fade-up 0.35s cubic-bezier(0.22, 1, 0.36, 1) backwards;
-  --animate-fade-in: fade-in 0.2s ease-out backwards;
-  --animate-pop-in: pop-in 0.25s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  /* Curvas propias: las de CSS por defecto se quedan cortas. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
+  --animate-fade-up: fade-up 300ms var(--ease-out) backwards;
+  --animate-fade-in: fade-in 200ms var(--ease-out) backwards;
+  --animate-pop-in: pop-in 220ms var(--ease-out) backwards;
   --animate-shimmer: shimmer 1.4s ease-in-out infinite;
+  --animate-grow-x: grow-x 600ms var(--ease-out) backwards;
+  --animate-draw: draw 700ms var(--ease-out) backwards;
+  --animate-spin-fast: spin 600ms linear infinite;
+  --animate-needle-settle: needle-settle 1100ms var(--ease-out) backwards;
+  --animate-mark: mark 220ms var(--ease-out) backwards;
 
   @keyframes fade-up {
-    from { opacity: 0; transform: translateY(0.8rem); }
+    from { opacity: 0; transform: translateY(var(--motion-distance)); }
     to { opacity: 1; transform: translateY(0); }
   }
 
@@ -108,22 +150,93 @@
   }
 
   @keyframes pop-in {
-    from { opacity: 0; transform: translateY(0.8rem) scale(0.97); }
+    from { opacity: 0; transform: translateY(var(--motion-distance)) scale(var(--motion-scale)); }
     to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* Las barras de datos crecen desde su origen: explican la proporción, no decoran. */
+  @keyframes grow-x {
+    from { transform: scaleX(0.04); }
+    to { transform: scaleX(1); }
+  }
+
+  /* Trazo de los gráficos (path con pathLength="1"). */
+  @keyframes draw {
+    from { stroke-dashoffset: 1; }
+    to { stroke-dashoffset: 0; }
+  }
+
+  /* La aguja de la brújula oscila y se asienta en el norte (pantallas de acceso, una sola vez). */
+  @keyframes needle-settle {
+    0% { transform: rotate(-70deg); }
+    55% { transform: rotate(14deg); }
+    80% { transform: rotate(-5deg); }
+    100% { transform: rotate(0deg); }
+  }
+
+  /* Respuesta al marcar algo (guardar): el icono se asienta desde un poco más pequeño. */
+  @keyframes mark {
+    from { transform: scale(var(--motion-mark-scale, 0.8)); }
+    to { transform: scale(1); }
   }
 
   @keyframes shimmer {
     0%, 100% { opacity: 1; }
-    50% { opacity: 0.45; }
+    50% { opacity: 0.5; }
   }
+}
+
+/* ---------------------------------------------------------------------------
+   Utilidades propias de la identidad visual
+   ------------------------------------------------------------------------- */
+
+/* Marcas de regla: divisor fino con una marca cada 0.8rem. */
+@utility ruler {
+  height: 0.6rem;
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--color-line-strong) 0 0.1rem,
+    transparent 0.1rem 0.8rem
+  );
+  mask-image: linear-gradient(to right, black 60%, transparent);
+}
+
+/* Retícula de puntos tipo papel milimetrado, se desvanece hacia los bordes. */
+@utility dot-grid {
+  background-image: radial-gradient(var(--c-grid-dot) 0.1rem, transparent 0.1rem);
+  background-size: 2.4rem 2.4rem;
+  mask-image: radial-gradient(ellipse 70% 60% at 30% 30%, black 20%, transparent 75%);
+}
+
+/* Teclas de atajo (<kbd>). */
+@utility kbd {
+  display: inline-flex;
+  min-width: 2rem;
+  height: 2rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  border: 0.1rem solid var(--color-line-strong);
+  background-color: var(--color-surface-2);
+  padding-inline: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--color-muted);
 }
 
 /* ---------------------------------------------------------------------------
    Base
    ------------------------------------------------------------------------- */
 @layer base {
+  :root {
+    /* Distancia y escala de las entradas; reduced-motion las anula (ver abajo). */
+    --motion-distance: 0.6rem;
+    --motion-scale: 0.96;
+  }
+
   html {
     font-size: 62.5%; /* 10px si el navegador usa 16px por defecto */
+    scrollbar-gutter: stable;
   }
 
   body {
@@ -132,9 +245,16 @@
     color: var(--color-fg);
     font-family: var(--font-sans);
     font-size: var(--text-base);
-    line-height: 1.5;
+    line-height: 1.55;
     -webkit-font-smoothing: antialiased;
-    transition: background-color 0.2s ease, color 0.2s ease;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
   }
 
   :focus-visible {
@@ -143,8 +263,8 @@
   }
 
   ::selection {
-    background-color: var(--color-accent);
-    color: var(--color-on-accent);
+    background-color: var(--color-lime);
+    color: var(--color-on-lime);
   }
 
   /* Sin scroll de fondo mientras hay un modal abierto */
@@ -157,21 +277,96 @@
     appearance: none;
   }
 
-  /* El <dialog> nativo: fondo y animación con el estilo de la web */
-  dialog::backdrop {
-    background-color: var(--color-overlay);
-    backdrop-filter: blur(0.3rem);
-    animation: fade-in 0.2s ease-out both;
+  /* Cambio de tema: la View Transition dibuja el círculo; desactivamos el fundido por defecto. */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
   }
 
   @media (prefers-reduced-motion: reduce) {
+    /* Menos movimiento, no cero: se mantienen los fundidos, desaparecen desplazamientos y escalas. */
+    :root {
+      --motion-distance: 0;
+      --motion-scale: 1;
+      --motion-mark-scale: 1;
+    }
+
     *,
     *::before,
-    *::after,
-    dialog::backdrop {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
+    *::after {
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Diálogos (<dialog>): entrada con @starting-style y salida más rápida.
+   Son transiciones, no keyframes, así abrir y cerrar rápido no da saltos.
+   ------------------------------------------------------------------------- */
+@layer components {
+  .dc-dialog {
+    opacity: 0;
+    transform: scale(0.97);
+    transition:
+      opacity 160ms var(--ease-out),
+      transform 160ms var(--ease-out),
+      overlay 160ms allow-discrete,
+      display 160ms allow-discrete;
+  }
+
+  .dc-dialog[open] {
+    opacity: 1;
+    transform: scale(1);
+    transition-duration: 240ms;
+
+    @starting-style {
+      opacity: 0;
+      transform: translateY(var(--motion-distance)) scale(var(--motion-scale));
+    }
+  }
+
+  /* Variante "hoja" que baja desde arriba (menú móvil). */
+  .dc-sheet {
+    transform: translateY(-1.2rem);
+  }
+
+  .dc-sheet[open] {
+    transform: translateY(0);
+    transition-timing-function: var(--ease-drawer);
+
+    @starting-style {
+      opacity: 0;
+      transform: translateY(-1.2rem);
+    }
+  }
+
+  .dc-dialog::backdrop {
+    background-color: transparent;
+    backdrop-filter: blur(0);
+    transition:
+      background-color 160ms var(--ease-out),
+      backdrop-filter 160ms var(--ease-out),
+      overlay 160ms allow-discrete,
+      display 160ms allow-discrete;
+  }
+
+  .dc-dialog[open]::backdrop {
+    background-color: var(--color-overlay);
+    backdrop-filter: blur(0.4rem);
+
+    @starting-style {
+      background-color: transparent;
+      backdrop-filter: blur(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dc-dialog,
+    .dc-sheet,
+    .dc-dialog[open],
+    .dc-sheet[open] {
+      transform: none;
     }
   }
 }

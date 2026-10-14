@@ -28,20 +28,27 @@ Sin token la app funciona igual, pero GitHub limita la búsqueda a 10 peticiones
 
 ```
 src/
-  components/   auth, layout, search, repos, lists, tags, tracking, stats, profile y ui
-  views/        pantallas: Explorar, Guardados, Listas, Etiquetas, Perfil, Entrar y Registro
+  components/   auth, layout, search, repos, lists, tags, tracking, stats, dashboard, compare, profile y ui
+  views/        pantallas: Explorar, Panel, Guardados, Listas, Etiquetas, Comparar, Perfil, Entrar y Registro
   hooks/        lógica de estado (sesión, búsqueda, guardados, listas, etiquetas, tema, toasts)
   services/     acceso a datos (API de GitHub y Supabase)
   context/      proveedores de sesión y notificaciones
   constants/    opciones de filtros, estados de seguimiento y colores de lenguajes
-  utils/        formateo y validaciones
+  utils/        formateo, validaciones y cálculos de la colección
   styles/       Tailwind y tokens de diseño (1rem = 10px)
 supabase/
   migrations/   esquema de la base de datos y políticas RLS
-  functions/    Edge Functions (proxy de GitHub, estadísticas diarias, eliminar cuenta)
+  functions/    Edge Functions (proxy de GitHub, guardar repositorio, estadísticas diarias, eliminar cuenta)
+  tests/        comprobación de aislamiento entre usuarios (RLS)
 ```
 
 ## Datos
+
+**Guardar un repositorio:** el navegador solo envía su id de GitHub a la Edge Function
+`save-repository`. Es el servidor quien pide los datos (nombre, descripción, enlace...) directamente a
+GitHub y los guarda en la tabla compartida `repositories`. Los usuarios solo pueden leer esa tabla: así
+nadie puede falsificar los datos de un repositorio que otros también tienen guardado.
+
 
 Los usuarios, repositorios guardados, listas y etiquetas se guardan en Supabase. Cada tabla tiene
 Row Level Security: un usuario solo puede leer y modificar sus propios datos, también accediendo
@@ -58,8 +65,8 @@ en mayúsculas o espacios, y al eliminar una se quita de repositorios y listas s
 DevCompass guarda un historial de stars, forks e issues abiertos de cada repositorio guardado
 (tabla `repository_stats`) y lo muestra en el detalle con dos gráficos de líneas.
 
-- **Captura inicial:** al guardar un repositorio, la app pide su primera captura a la Edge Function
-  `sync-repository-stats`, que solo la acepta si el usuario tiene ese repositorio guardado.
+- **Captura inicial:** al guardar un repositorio, la Edge Function `save-repository` registra su
+  primera captura con los mismos datos que acaba de pedir a GitHub.
 - **Tarea diaria:** Supabase Cron (`sync-repository-stats-daily`, 03:00 UTC) llama a la misma
   función. Procesa cada repositorio una sola vez, aunque lo hayan guardado muchos usuarios.
 - **Una captura al día:** la restricción única `(repository_id, captured_on)` lo garantiza aunque la
@@ -76,3 +83,62 @@ select vault.create_secret('https://<project-ref>.supabase.co', 'project_url');
 select vault.create_secret(encode(extensions.gen_random_bytes(32), 'hex'), 'sync_stats_cron_secret');
 ```
 
+
+## Panel
+
+La pestaña **Panel** (`/panel`) resume la colección: total de guardados y cuántos hay por aprender, en
+progreso o completados; distribución por lenguaje; estadísticas agregadas (stars y forks totales, media de
+stars, el más popular, repos con notas y etiquetas en uso); los últimos repositorios guardados y los que
+tuvieron actividad más reciente en GitHub. Desde ahí se abre el detalle de cualquier repositorio o se va a
+la colección completa y a la comparación. Todo se calcula en el navegador a partir de la colección ya cargada.
+
+## Comparar
+
+En **Comparar** (`/comparar`) se eligen de dos a tres repositorios guardados. Una tabla muestra sus
+estadísticas actuales (resaltando el valor más alto) y un gráfico compara la evolución de sus stars con las
+capturas de `repository_stats`. Los repositorios con menos de dos capturas se indican aparte, sin impedir la
+comparación de sus estadísticas actuales. La selección se guarda en la URL (`?repos=id1,id2`) y quitar un
+repositorio de la comparación no lo borra de la colección.
+
+## Diseño
+
+Identidad "instrumento de navegación": papel cálido (claro) y tinta azul-negra (oscuro) con un único
+acento lima, tipografías Geist y Geist Mono (alojadas con `@fontsource-variable`, sin CDN) y cifras en
+mono tabular. Los tokens de color, las curvas de movimiento (`--ease-out`, `--ease-in-out`,
+`--ease-drawer`) y las utilidades propias (`ruler`, `dot-grid`, `kbd`) están en `src/styles/index.css`.
+
+- La aguja de la marca apunta al rumbo de cada sección (`src/constants/navigation.js`) y gira por el camino más corto.
+- Pestañas con indicador recortado por `clip-path`, menú de usuario y menú móvil en `<dialog>`.
+- El cambio de tema se abre en círculo desde el botón (View Transitions); sin soporte es instantáneo.
+- Animaciones cortas (≤300 ms) con `transform`/`opacity`; con `prefers-reduced-motion` desaparecen
+  desplazamientos y giros y se mantienen los fundidos.
+- Atajo: `/` enfoca el buscador de Explorar.
+
+## Calidad
+
+```bash
+npm run lint     # ESLint (incluye las reglas del proyecto: sin var, alert ni innerHTML)
+npm test         # Vitest + Testing Library (lógica, servicios con Supabase simulado y componentes)
+npm run build    # build de producción
+```
+
+Los tests nunca hablan con el Supabase real: usan un cliente simulado y variables de entorno falsas
+(`vite.config.js` → `test`).
+
+**Aislamiento entre usuarios (RLS):** `supabase/tests/rls.sql` simula a un usuario ajeno e intenta leer
+y modificar los datos de otro (guardados, notas, estados, etiquetas, listas, historial y la caché de
+repositorios). Ejecútalo entero en el SQL Editor de Supabase: devuelve `RLS OK` y no deja datos, porque
+todo ocurre en una transacción que se deshace al final.
+
+## Limitaciones conocidas
+
+- **Proxy de GitHub público:** `github-proxy` acepta peticiones sin sesión para que se pueda explorar sin
+  cuenta. Solo reenvía las rutas de búsqueda y lenguajes, pero cualquiera puede consumir el cupo del
+  token de GitHub del proyecto (5.000 peticiones/hora). Si fuera un problema, habría que exigir sesión o
+  añadir un límite por IP.
+- **Protección de contraseñas filtradas:** Supabase solo la ofrece en los planes de pago
+  (*Leaked password protection*), así que en el plan gratuito queda desactivada. La app exige al menos
+  8 caracteres (`src/utils/validation.js`); al pasar a un plan de pago conviene activarla.
+- **Tests de extremo a extremo:** los flujos completos (entrar, buscar, guardar...) se revisan a mano en el
+  navegador; no hay tests automáticos con un navegador real (p. ej. Playwright).
+- **Edge Functions:** el código Deno de `supabase/functions` no pasa por ESLint ni por Vitest.

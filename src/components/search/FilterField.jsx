@@ -1,47 +1,56 @@
-import { ChevronDownIcon } from '../ui/Icons'
-import { CONTROL_CLASSES, LABEL_CLASSES } from '../ui/formStyles'
+import SelectMenu from '../ui/SelectMenu'
 
-function FieldLabel({ htmlFor, children }) {
+// Control compacto con la etiqueta dentro: "Lenguaje  Todos ▾".
+// Cuando tiene un valor se tiñe de acento, así se ve de un vistazo qué filtros están aplicados.
+function fieldClasses(isActive) {
   return (
-    <label htmlFor={htmlFor} className={LABEL_CLASSES}>
+    'group relative flex h-10 min-w-0 items-center rounded-lg border shadow-card ' +
+    'transition-[border-color,background-color,box-shadow] duration-150 ease-out ' +
+    'focus-within:ring-4 focus-within:ring-accent-soft ' +
+    (isActive
+      ? 'border-accent/45 bg-accent-soft focus-within:border-accent'
+      : 'border-line-strong bg-surface hover:border-[color-mix(in_oklab,var(--color-fg),transparent_70%)] focus-within:border-accent')
+  )
+}
+
+function FieldLabel({ id, htmlFor, children }) {
+  return (
+    <label id={id} htmlFor={htmlFor} className="shrink-0 cursor-pointer pl-3 text-xs whitespace-nowrap text-muted">
       {children}
     </label>
   )
 }
 
-/** Desplegable. Si se pasa `placeholder`, se añade como opción vacía ("Todos"). */
-export function SelectField({ id, label, value, options, placeholder, onChange }) {
+/** Desplegable con la etiqueta dentro. Si se pasa `placeholder`, se añade como opción vacía ("Todos"). */
+export function SelectField({ id, label, value, options, placeholder, onChange, className = '' }) {
+  const labelId = `${id}-label`
+  const allOptions = placeholder ? [{ value: '', label: placeholder }, ...options] : options
+
   return (
-    <div className="flex flex-col gap-1.5">
-      <FieldLabel htmlFor={id}>{label}</FieldLabel>
-      <div className="relative">
-        <select
-          id={id}
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-          className={`${CONTROL_CLASSES} cursor-pointer appearance-none pr-9`}
-        >
-          {placeholder && <option value="">{placeholder}</option>}
-          {options.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-        <ChevronDownIcon className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted" />
-      </div>
+    <div className={`${fieldClasses(Boolean(placeholder) && value !== '')} ${className}`}>
+      <FieldLabel id={labelId} htmlFor={id}>
+        {label}
+      </FieldLabel>
+      <SelectMenu
+        id={id}
+        value={value}
+        options={allOptions}
+        onChange={onChange}
+        labelledBy={labelId}
+        triggerClassName="h-full flex-1 pr-2.5 pl-2 text-sm font-medium text-fg"
+      />
     </div>
   )
 }
 
 /** Campo numérico que solo acepta dígitos (evita "e", "-", etc.). */
-export function NumberField({ id, label, value, placeholder, onChange }) {
+export function NumberField({ id, label, value, placeholder, onChange, className = '' }) {
   function handleChange(event) {
     onChange(event.target.value.replace(/\D/g, ''))
   }
 
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className={`${fieldClasses(value !== '')} ${className}`}>
       <FieldLabel htmlFor={id}>{label}</FieldLabel>
       <input
         id={id}
@@ -50,7 +59,7 @@ export function NumberField({ id, label, value, placeholder, onChange }) {
         value={value}
         onChange={handleChange}
         placeholder={placeholder}
-        className={`${CONTROL_CLASSES} font-mono placeholder:font-sans placeholder:text-muted/70`}
+        className="h-full w-full min-w-0 flex-1 bg-transparent pr-3 pl-2 font-mono text-sm font-medium text-fg tabular-nums placeholder:font-sans placeholder:font-normal placeholder:text-subtle focus:outline-none"
       />
     </div>
   )

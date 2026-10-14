@@ -1,9 +1,6 @@
 import { SelectField } from '../search/FilterField'
-import { FilterIcon, ResetIcon } from '../ui/Icons'
-import { buttonClasses } from '../ui/buttonStyles'
+import { ResetIcon } from '../ui/Icons'
 import { STATUS_OPTIONS } from '../../constants/repoStatus'
-
-export const EMPTY_SAVED_FILTERS = { status: '', tagId: '' }
 
 /** Filtros de la colección guardada: por estado y por etiqueta. Se aplican al momento. */
 export default function SavedFilters({ filters, tags, onChange, onReset, resultCount, totalCount }) {
@@ -21,46 +18,44 @@ export default function SavedFilters({ filters, tags, onChange, onReset, resultC
 
   return (
     <form onSubmit={handleSubmit} aria-label="Filtros de tu colección" className="animate-fade-up">
-      <fieldset className="flex flex-col gap-4 rounded-xl border border-line bg-surface p-4 sm:flex-row sm:items-end sm:p-5">
+      <fieldset className="flex flex-col gap-2 sm:flex-row sm:items-center">
         <legend className="sr-only">Filtrar repositorios guardados</legend>
 
-        <p className="flex items-center gap-2 font-mono text-xs font-semibold tracking-wider text-muted uppercase sm:mb-3 sm:self-end">
-          <FilterIcon className="size-4 text-accent" />
-          Filtros
-        </p>
-
-        <div className="grid flex-1 grid-cols-1 gap-3 min-[480px]:grid-cols-2 sm:max-w-[56rem]">
+        <div className="grid flex-1 grid-cols-1 gap-2 min-[480px]:grid-cols-2 sm:flex sm:flex-none">
           <SelectField
             id="saved-filter-status"
             label="Estado"
             value={filters.status}
             options={STATUS_OPTIONS}
-            placeholder="Todos los estados"
+            placeholder="Todos"
             onChange={(value) => onChange('status', value)}
+            className="sm:w-[22rem]"
           />
           <SelectField
             id="saved-filter-tag"
             label="Etiqueta"
             value={filters.tagId}
             options={tagOptions}
-            placeholder={tags.length === 0 ? 'Sin etiquetas todavía' : 'Todas las etiquetas'}
+            placeholder={tags.length === 0 ? 'Sin etiquetas' : 'Todas'}
             onChange={(value) => onChange('tagId', value)}
+            className="sm:w-[22rem]"
           />
         </div>
 
-        <div className="flex items-center justify-between gap-3 sm:ml-auto sm:flex-col sm:items-end">
-          <p className="font-mono text-xs text-muted" aria-live="polite">
-            {resultCount} de {totalCount}
+        <div className="flex items-center justify-between gap-3 sm:ml-auto">
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={handleReset}
+              className="flex h-10 cursor-pointer items-center gap-2 rounded-lg px-3 text-sm font-medium text-muted transition-[color,background-color,scale] duration-150 hover:bg-surface-2 hover:text-fg active:scale-[0.97] animate-fade-in"
+            >
+              <ResetIcon className="size-3.5" />
+              Restablecer filtros
+            </button>
+          )}
+          <p className="ml-auto font-mono text-xs text-muted tabular-nums" aria-live="polite">
+            <span className="text-fg">{resultCount}</span> / {totalCount}
           </p>
-          <button
-            type="button"
-            onClick={handleReset}
-            disabled={!hasActiveFilters}
-            className={buttonClasses({ variant: 'ghost', size: 'sm' })}
-          >
-            <ResetIcon className="size-3.5" />
-            Restablecer filtros
-          </button>
         </div>
       </fieldset>
     </form>

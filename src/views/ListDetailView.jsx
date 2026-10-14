@@ -109,7 +109,7 @@ export default function ListDetailView({
       </Link>
 
       <PageHeader
-        command={`cat ~/listas/${list.name.toLowerCase().replace(/\s+/g, '-')}`}
+        eyebrow="Lista"
         title={list.name}
         titleId="list-detail-title"
         description={list.description || `${listRepos.length} repositorios en esta lista.`}

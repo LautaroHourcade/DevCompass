@@ -9,11 +9,11 @@ export default function TagChip({ name, onRemove, isRemoving = false }) {
 
   return (
     <span
-      className={`inline-flex h-7 items-center gap-1 rounded-full border border-purple/30 bg-purple/10 pl-3 font-mono text-xs text-purple animate-fade-in ${
-        onRemove ? 'pr-1' : 'pr-3'
+      className={`inline-flex h-7 items-center gap-1 rounded-md border border-line-strong bg-surface-2 pl-2 font-mono text-xs text-fg transition-opacity duration-150 animate-fade-in ${
+        onRemove ? 'pr-0.5' : 'pr-2'
       } ${isRemoving ? 'opacity-50' : ''}`}
     >
-      <span aria-hidden="true">#</span>
+      <span aria-hidden="true" className="text-accent">#</span>
       <span className="max-w-[16rem] truncate">{name}</span>
       {onRemove && (
         <button
@@ -22,7 +22,7 @@ export default function TagChip({ name, onRemove, isRemoving = false }) {
           disabled={isRemoving}
           aria-label={`Quitar la etiqueta ${name}`}
           title="Quitar etiqueta"
-          className="flex size-5 cursor-pointer items-center justify-center rounded-full transition-colors hover:bg-purple/20 disabled:cursor-wait"
+          className="flex size-6 cursor-pointer items-center justify-center rounded text-muted transition-[background-color,color] duration-150 hover:bg-line-strong hover:text-fg disabled:cursor-wait"
         >
           <CloseIcon className="size-3" strokeWidth={2.5} />
         </button>

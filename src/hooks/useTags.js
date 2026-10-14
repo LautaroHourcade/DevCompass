@@ -1,44 +1,26 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo } from 'react'
 import { createTag, deleteTag, getTags, normalizeTagName, renameTag } from '../services/tagsService'
+import { useLoadedData } from './useLoadedData'
 
 function sortByName(tags) {
   return [...tags].sort((first, second) => first.name.localeCompare(second.name, 'es', { sensitivity: 'base' }))
 }
 
+const NO_TAGS = []
+
+// Las etiquetas se muestran siempre ordenadas por nombre.
+const loadSortedTags = async () => sortByName(await getTags())
+
 /** Etiquetas del usuario indicado. Sin usuario la lista está vacía. */
 export function useTags(userId) {
-  const [tags, setTags] = useState([])
-  const [isLoading, setIsLoading] = useState(false)
-  // Si la carga falla guardamos el error para mostrarlo (no una colección vacía engañosa).
-  const [loadError, setLoadError] = useState(null)
-  // Cambiar reloadKey vuelve a lanzar la carga (botón "Reintentar").
-  const [reloadKey, setReloadKey] = useState(0)
-
-  useEffect(() => {
-    let isActive = true
-
-    setTags([])
-    setLoadError(null)
-    if (!userId) return
-
-    setIsLoading(true)
-    getTags()
-      .then((loaded) => {
-        if (isActive) setTags(sortByName(loaded))
-      })
-      .catch((error) => {
-        if (isActive) setLoadError(error)
-      })
-      .finally(() => {
-        if (isActive) setIsLoading(false)
-      })
-
-    return () => {
-      isActive = false
-    }
-  }, [userId, reloadKey])
-
-  const reload = useCallback(() => setReloadKey((key) => key + 1), [])
+  // Si la carga falla, loadError guarda el error para mostrarlo (no una colección vacía engañosa).
+  const {
+    data: tags,
+    setData: setTags,
+    isLoading,
+    error: loadError,
+    reload,
+  } = useLoadedData(userId || null, loadSortedTags, NO_TAGS)
 
   const getTagById = useCallback((tagId) => tags.find((tag) => tag.id === tagId), [tags])
 
@@ -60,7 +42,7 @@ export function useTags(userId) {
         setTags((current) => current.filter((tag) => tag.id !== tagId))
       },
     }),
-    [],
+    [setTags],
   )
 
   return { tags, isLoading, loadError, reload, getTagById, ...actions }

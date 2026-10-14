@@ -4,6 +4,8 @@ import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import ToastProvider from './context/ToastProvider'
 import AuthProvider from './context/AuthProvider'
+import '@fontsource-variable/geist'
+import '@fontsource-variable/geist-mono'
 import './styles/index.css'
 
 createRoot(document.getElementById('root')).render(

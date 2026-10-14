@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo } from 'react'
 import {
   deleteSavedRepoNote,
   getSavedRepos,
@@ -8,42 +8,20 @@ import {
   updateSavedRepoStatus,
 } from '../services/savedReposService'
 import { addTagToSavedRepo, removeTagFromSavedRepo } from '../services/tagsService'
+import { useLoadedData } from './useLoadedData'
+
+const NO_REPOS = []
 
 /** Repositorios guardados del usuario indicado. Sin usuario (userId vacío) la lista está vacía. */
 export function useSavedRepos(userId) {
-  const [savedRepos, setSavedRepos] = useState([])
-  const [isLoading, setIsLoading] = useState(false)
-  // Si la carga falla guardamos el error para mostrarlo (no una colección vacía engañosa).
-  const [loadError, setLoadError] = useState(null)
-  // Cambiar reloadKey vuelve a lanzar la carga (botón "Reintentar").
-  const [reloadKey, setReloadKey] = useState(0)
-
-  useEffect(() => {
-    let isActive = true
-
-    // Al cambiar de usuario, vaciamos la lista anterior antes de cargar la nueva.
-    setSavedRepos([])
-    setLoadError(null)
-    if (!userId) return
-
-    setIsLoading(true)
-    getSavedRepos()
-      .then((repos) => {
-        if (isActive) setSavedRepos(repos)
-      })
-      .catch((error) => {
-        if (isActive) setLoadError(error)
-      })
-      .finally(() => {
-        if (isActive) setIsLoading(false)
-      })
-
-    return () => {
-      isActive = false
-    }
-  }, [userId, reloadKey])
-
-  const reload = useCallback(() => setReloadKey((key) => key + 1), [])
+  // Si la carga falla, loadError guarda el error para mostrarlo (no una colección vacía engañosa).
+  const {
+    data: savedRepos,
+    setData: setSavedRepos,
+    isLoading,
+    error: loadError,
+    reload,
+  } = useLoadedData(userId || null, getSavedRepos, NO_REPOS)
 
   const savedIds = useMemo(() => new Set(savedRepos.map((repo) => repo.id)), [savedRepos])
 
@@ -60,16 +38,19 @@ export function useSavedRepos(userId) {
       setSavedRepos(await saveRepo(repo))
       return true
     },
-    [savedIds],
+    [savedIds, setSavedRepos],
   )
 
   /**
    * Cambia un repositorio guardado en el estado local.
    * Solo se llama después de que Supabase confirme el cambio, así la interfaz refleja lo guardado.
    */
-  const patchRepo = useCallback((savedId, getChanges) => {
-    setSavedRepos((repos) => repos.map((repo) => (repo.savedId === savedId ? { ...repo, ...getChanges(repo) } : repo)))
-  }, [])
+  const patchRepo = useCallback(
+    (savedId, getChanges) => {
+      setSavedRepos((repos) => repos.map((repo) => (repo.savedId === savedId ? { ...repo, ...getChanges(repo) } : repo)))
+    },
+    [setSavedRepos],
+  )
 
   // Acciones de seguimiento: estado, nota y etiquetas. Lanzan un error si Supabase falla.
   const trackingActions = useMemo(
@@ -103,7 +84,7 @@ export function useSavedRepos(userId) {
         )
       },
     }),
-    [patchRepo],
+    [patchRepo, setSavedRepos],
   )
 
   return { savedRepos, isLoading, loadError, reload, isSaved, toggleSave, ...trackingActions }

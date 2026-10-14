@@ -4,73 +4,103 @@ import { useDebouncedValue } from './useDebouncedValue'
 
 const SEARCH_DELAY_MS = 400
 
+const EMPTY_RESULTS = { searchKey: null, repos: [], totalCount: 0, hasMore: false, page: 0, status: 'loading', error: null }
+
 /**
  * Busca repositorios en GitHub a partir del texto, los filtros y el orden.
  * - Espera a que el usuario deje de escribir (debounce).
  * - Cancela la petición anterior si llega una nueva (AbortController).
  * - Permite cargar más resultados de forma incremental.
  *
+ * Los resultados guardan la búsqueda a la que pertenecen (searchKey): si no coincide con la
+ * búsqueda actual es que la nueva todavía está cargando. Así no hace falta reiniciar el estado
+ * dentro del efecto.
+ *
  * status: 'loading' | 'loading-more' | 'success' | 'error'
  */
 export function useRepositorySearch({ text, filters, sort }) {
-  const [repos, setRepos] = useState([])
-  const [totalCount, setTotalCount] = useState(0)
-  const [page, setPage] = useState(1)
-  const [hasMore, setHasMore] = useState(false)
-  const [status, setStatus] = useState('loading')
-  const [error, setError] = useState(null)
+  const query = useDebouncedValue(buildSearchQuery(text, filters), SEARCH_DELAY_MS)
+  // Reintentar la primera página vuelve a lanzar el efecto aunque la búsqueda no cambie.
+  const [retryCount, setRetryCount] = useState(0)
+  const searchKey = `${query}|${sort}|${retryCount}`
+
+  const [results, setResults] = useState(EMPTY_RESULTS)
   const controllerRef = useRef(null)
 
-  const query = useDebouncedValue(buildSearchQuery(text, filters), SEARCH_DELAY_MS)
+  // Cancela la petición en curso y devuelve una señal para la nueva.
+  const startRequest = useCallback(() => {
+    controllerRef.current?.abort()
+    const controller = new AbortController()
+    controllerRef.current = controller
+    return controller.signal
+  }, [])
 
-  const fetchPage = useCallback(
-    async (pageToLoad) => {
-      controllerRef.current?.abort()
-      const controller = new AbortController()
-      controllerRef.current = controller
-
-      setStatus(pageToLoad === 1 ? 'loading' : 'loading-more')
-      setError(null)
-
-      try {
-        const result = await searchRepositories({
-          query,
-          sort,
-          page: pageToLoad,
-          signal: controller.signal,
-        })
-
-        setRepos((previous) =>
-          pageToLoad === 1 ? result.items : mergeWithoutDuplicates(previous, result.items),
-        )
-        setTotalCount(result.totalCount)
-        setHasMore(result.hasMore)
-        setPage(pageToLoad)
-        setStatus('success')
-      } catch (requestError) {
-        if (requestError.name === 'AbortError') return
-        setError(requestError)
-        setStatus('error')
-      }
-    },
-    [query, sort],
-  )
-
+  // Primera página de cada búsqueda.
   useEffect(() => {
-    fetchPage(1)
-    return () => controllerRef.current?.abort()
-  }, [fetchPage])
+    const signal = startRequest()
 
-  const loadMore = useCallback(() => fetchPage(page + 1), [fetchPage, page])
+    searchRepositories({ query, sort, page: 1, signal })
+      .then((result) => {
+        setResults({
+          searchKey,
+          repos: result.items,
+          totalCount: result.totalCount,
+          hasMore: result.hasMore,
+          page: 1,
+          status: 'success',
+          error: null,
+        })
+      })
+      .catch((error) => {
+        if (error.name === 'AbortError') return
+        setResults({ ...EMPTY_RESULTS, searchKey, status: 'error', error })
+      })
+
+    return () => controllerRef.current?.abort()
+  }, [query, sort, searchKey, startRequest])
+
+  const isCurrent = results.searchKey === searchKey
+  const current = isCurrent ? results : EMPTY_RESULTS
+
+  // Página siguiente de la búsqueda actual (desde un botón, no desde un efecto).
+  const loadMore = useCallback(async () => {
+    const nextPage = results.page + 1
+    const signal = startRequest()
+    setResults((previous) => ({ ...previous, status: 'loading-more', error: null }))
+
+    try {
+      const result = await searchRepositories({ query, sort, page: nextPage, signal })
+      setResults((previous) => ({
+        ...previous,
+        repos: mergeWithoutDuplicates(previous.repos, result.items),
+        totalCount: result.totalCount,
+        hasMore: result.hasMore,
+        page: nextPage,
+        status: 'success',
+      }))
+    } catch (error) {
+      if (error.name === 'AbortError') return
+      // Falló "cargar más": se conservan los resultados ya cargados.
+      setResults((previous) => ({ ...previous, status: 'error', error }))
+    }
+  }, [query, sort, results.page, startRequest])
 
   // Si falló la primera página se reintenta desde el principio; si falló
   // "cargar más", se reintenta solo la página siguiente.
-  const retry = useCallback(
-    () => fetchPage(repos.length > 0 ? page + 1 : 1),
-    [fetchPage, page, repos.length],
-  )
+  const retry = useCallback(() => {
+    if (current.repos.length > 0) loadMore()
+    else setRetryCount((count) => count + 1)
+  }, [current.repos.length, loadMore])
 
-  return { repos, totalCount, hasMore, status, error, loadMore, retry }
+  return {
+    repos: current.repos,
+    totalCount: current.totalCount,
+    hasMore: current.hasMore,
+    status: current.status,
+    error: current.error,
+    loadMore,
+    retry,
+  }
 }
 
 // GitHub puede repetir algún repositorio entre páginas si el ranking cambia.

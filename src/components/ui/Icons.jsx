@@ -303,3 +303,88 @@ export function ResetIcon(props) {
     </Icon>
   )
 }
+
+export function DashboardIcon(props) {
+  return (
+    <Icon {...props}>
+      <rect x="3" y="3" width="7" height="9" rx="1" />
+      <rect x="14" y="3" width="7" height="5" rx="1" />
+      <rect x="14" y="12" width="7" height="9" rx="1" />
+      <rect x="3" y="16" width="7" height="5" rx="1" />
+    </Icon>
+  )
+}
+
+export function CompareIcon(props) {
+  return (
+    <Icon {...props}>
+      <line x1="6" y1="20" x2="6" y2="10" />
+      <line x1="12" y1="20" x2="12" y2="4" />
+      <line x1="18" y1="20" x2="18" y2="14" />
+    </Icon>
+  )
+}
+
+export function ArrowRightIcon(props) {
+  return (
+    <Icon {...props}>
+      <line x1="5" y1="12" x2="19" y2="12" />
+      <polyline points="12 5 19 12 12 19" />
+    </Icon>
+  )
+}
+
+export function MenuIcon(props) {
+  return (
+    <Icon {...props}>
+      <line x1="4" y1="8" x2="20" y2="8" />
+      <line x1="4" y1="16" x2="20" y2="16" />
+    </Icon>
+  )
+}
+
+export function GitHubIcon({ className = 'size-4' }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={`shrink-0 ${className}`} aria-hidden="true" focusable="false">
+      <path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.39-5.25 5.67.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z" />
+    </svg>
+  )
+}
+
+/**
+ * Marca de DevCompass: anillo con marcas de rumbo y una aguja.
+ * - bearing: grados hacia los que apunta la aguja (gira con transición al cambiar).
+ * - needleClassName: clases extra para la aguja (p. ej. una animación de entrada).
+ * La mitad norte de la aguja usa el color de acento; la sur, el color del texto atenuado.
+ */
+export function CompassMark({ bearing = 0, className = 'size-7', needleClassName = '' }) {
+  const ticks = Array.from({ length: 12 }, (_, index) => index * 30)
+
+  return (
+    <svg viewBox="0 0 32 32" className={`shrink-0 ${className}`} aria-hidden="true" focusable="false">
+      <circle cx="16" cy="16" r="14.5" fill="none" stroke="currentColor" strokeOpacity="0.28" strokeWidth="1" />
+      {ticks.map((angle) => (
+        <line
+          key={angle}
+          x1="16"
+          y1={angle % 90 === 0 ? 2.6 : 3.4}
+          x2="16"
+          y2={angle % 90 === 0 ? 5.6 : 4.6}
+          stroke="currentColor"
+          strokeOpacity={angle === 0 ? 0.9 : 0.4}
+          strokeWidth={angle % 90 === 0 ? 1.4 : 1}
+          strokeLinecap="round"
+          transform={`rotate(${angle} 16 16)`}
+        />
+      ))}
+      <g
+        style={{ transform: `rotate(${bearing}deg)`, transformOrigin: '16px 16px' }}
+        className={`transition-transform duration-500 ease-in-out motion-reduce:transition-none ${needleClassName}`}
+      >
+        <polygon points="16,7.5 18.4,16 13.6,16" fill="var(--color-accent)" />
+        <polygon points="16,24.5 18.4,16 13.6,16" fill="currentColor" fillOpacity="0.32" />
+        <circle cx="16" cy="16" r="1.5" fill="var(--color-canvas)" stroke="currentColor" strokeWidth="1" />
+      </g>
+    </svg>
+  )
+}

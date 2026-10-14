@@ -11,9 +11,11 @@ export default function ErrorMessage({ error, onRetry }) {
   return (
     <section
       role="alert"
-      className="flex flex-col items-start gap-3 rounded-xl border border-danger/40 bg-danger/5 p-5 sm:flex-row sm:items-center animate-fade-up"
+      className="flex flex-col items-start gap-3 rounded-xl border border-danger/35 bg-danger/5 p-5 sm:flex-row sm:items-center animate-fade-up"
     >
-      <AlertIcon className="size-6 text-danger" />
+      <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-danger/10 text-danger">
+        <AlertIcon className="size-5" />
+      </span>
       <div className="flex-1">
         <p className="font-medium">{error.message}</p>
         {error.resetAt && (

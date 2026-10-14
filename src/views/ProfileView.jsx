@@ -11,7 +11,7 @@ export default function ProfileView() {
   return (
     <section aria-labelledby="profile-title" className="mx-auto flex max-w-[80rem] flex-col gap-6">
       <PageHeader
-        command="whoami"
+        eyebrow="Cuenta"
         title={`Hola, ${getDisplayName(user)}`}
         titleId="profile-title"
         description="Gestiona tus datos, tu contraseña y tu cuenta."

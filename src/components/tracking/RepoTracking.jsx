@@ -46,10 +46,10 @@ export default function RepoTracking({ repo, tags, onChangeStatus, onRemoveTag, 
           type="button"
           onClick={handleOpenNote}
           title={hasNote ? 'Ver o editar la nota' : 'Añadir una nota'}
-          className={`inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-full border px-3 text-xs font-medium transition-colors ${
+          className={`inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md border px-2.5 text-xs font-medium transition-[border-color,color,scale] duration-150 active:scale-[0.97] ${
             hasNote
               ? 'border-star/40 bg-star/10 text-star hover:border-star'
-              : 'border-dashed border-line text-muted hover:border-accent hover:text-accent'
+              : 'border-dashed border-line-strong text-muted hover:border-accent hover:text-accent'
           }`}
         >
           <NoteIcon className="size-3.5" />
@@ -57,7 +57,7 @@ export default function RepoTracking({ repo, tags, onChangeStatus, onRemoveTag, 
         </button>
       </div>
 
-      {hasNote && <p className="line-clamp-2 border-l-2 border-star/50 pl-3 text-xs text-muted italic">{repo.notes}</p>}
+      {hasNote && <p className="line-clamp-2 border-l-2 border-star/50 pl-3 text-xs text-muted">{repo.notes}</p>}
 
       {tags.length > 0 && (
         <ul aria-label="Etiquetas" className="flex flex-wrap gap-1.5">

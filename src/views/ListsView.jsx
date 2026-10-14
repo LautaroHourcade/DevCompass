@@ -87,7 +87,7 @@ export default function ListsView({ listsState, tagsState }) {
     }
 
     return (
-      <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {filteredLists.map((list, index) => (
           <li key={list.id}>
             <ListCard
@@ -107,7 +107,7 @@ export default function ListsView({ listsState, tagsState }) {
   return (
     <section aria-labelledby="lists-title" className="flex flex-col gap-6">
       <PageHeader
-        command="ls ~/listas"
+        eyebrow="Colecciones temáticas"
         title="Tus listas"
         titleId="lists-title"
         description="Agrupa tus repositorios guardados por tema, proyecto o lo que necesites."

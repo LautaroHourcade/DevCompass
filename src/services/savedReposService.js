@@ -1,11 +1,8 @@
 // Persistencia de los repositorios guardados en Supabase.
-// Las funciones devuelven la lista completa actualizada, igual que antes con localStorage,
-// para que useSavedRepos no tenga que cambiar.
+// Las funciones devuelven la lista completa actualizada para que useSavedRepos solo tenga que reemplazarla.
+// La tabla compartida repositories solo la escribe el servidor (ver saveRepo).
 import { supabase } from '../lib/supabase'
 import { getCurrentUser } from './authService'
-import { requestInitialCapture } from './statsService'
-
-const UNIQUE_VIOLATION_CODE = '23505'
 
 async function getUserIdOrThrow() {
   const user = await getCurrentUser()
@@ -54,27 +51,6 @@ export const SAVED_REPO_COLUMNS = 'id, created_at, status, notes, repositories(*
 
 export const MAX_NOTE_LENGTH = 2000
 
-/** Convierte un repositorio de la app a la fila de la tabla repositories. */
-function toRepositoryRow(repo) {
-  return {
-    github_id: repo.id,
-    name: repo.name,
-    full_name: repo.fullName,
-    description: repo.description || null,
-    html_url: repo.url,
-    language: repo.language,
-    stars: repo.stars,
-    forks: repo.forks,
-    open_issues: repo.openIssues,
-    license: repo.license,
-    owner_login: repo.owner.login,
-    owner_avatar_url: repo.owner.avatarUrl,
-    updated_at: repo.updatedAt,
-    created_at: repo.createdAt,
-    synced_at: new Date().toISOString(),
-  }
-}
-
 export async function getSavedRepos() {
   const user = await getCurrentUser()
   if (!user) return []
@@ -90,32 +66,37 @@ export async function getSavedRepos() {
   return data.map(toAppRepo)
 }
 
+/**
+ * Lee el mensaje de error que devuelve una Edge Function ({ error: "..." }).
+ * Si no se puede leer, usa el mensaje genérico.
+ */
+async function getFunctionErrorMessage(error, fallback) {
+  try {
+    const body = await error.context?.json()
+    return body?.error || fallback
+  } catch {
+    return fallback
+  }
+}
+
+/**
+ * Guarda un repositorio en la colección. Solo se envía su id de GitHub: el servidor
+ * (Edge Function save-repository) pide los datos a GitHub, los guarda en la caché compartida,
+ * lo añade a la colección del usuario y registra la primera captura de estadísticas.
+ */
 export async function saveRepo(repo) {
-  const userId = await getUserIdOrThrow()
+  await getUserIdOrThrow()
 
-  // Guardamos los datos del repositorio en la caché compartida (o los actualizamos).
-  const { data: stored, error: upsertError } = await supabase
-    .from('repositories')
-    .upsert(toRepositoryRow(repo), { onConflict: 'github_id' })
-    .select('id')
-    .single()
+  const { error } = await supabase.functions.invoke('save-repository', {
+    method: 'POST',
+    body: { githubId: repo.id },
+  })
 
-  if (upsertError) throw new Error('No se pudo guardar el repositorio. Inténtalo de nuevo.')
-
-  // La restricción UNIQUE (user_id, repository_id) impide duplicados.
-  // Si ya estaba guardado, no es un error: simplemente devolvemos la lista.
-  const { error: insertError } = await supabase
-    .from('user_repositories')
-    .insert({ user_id: userId, repository_id: stored.id })
-
-  if (insertError && insertError.code !== UNIQUE_VIOLATION_CODE) {
-    throw new Error('No se pudo guardar el repositorio. Inténtalo de nuevo.')
+  if (error) {
+    throw new Error(await getFunctionErrorMessage(error, 'No se pudo guardar el repositorio. Inténtalo de nuevo.'))
   }
 
-  // Primera captura de estadísticas, a la vez que recargamos la colección.
-  // Si falla no es grave: la tarea diaria la registrará en su próxima ejecución.
-  const [repos] = await Promise.all([getSavedRepos(), requestInitialCapture(stored.id).catch(() => {})])
-  return repos
+  return getSavedRepos()
 }
 
 export async function removeRepo(repoId) {

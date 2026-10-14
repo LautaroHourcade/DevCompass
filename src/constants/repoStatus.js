@@ -9,6 +9,9 @@ export const STATUS_OPTIONS = [
   { value: 'completed', label: 'Completado', dotClass: 'bg-accent', badgeClass: 'border-accent/40 bg-accent-soft text-accent' },
 ]
 
+// Filtros de la colección guardada sin aplicar (todos los estados y todas las etiquetas).
+export const EMPTY_SAVED_FILTERS = { status: '', tagId: '' }
+
 export function getStatusOption(value) {
   return STATUS_OPTIONS.find((option) => option.value === value) ?? STATUS_OPTIONS[0]
 }

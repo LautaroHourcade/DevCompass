@@ -1,10 +1,8 @@
 import { useId, useState } from 'react'
+import ChartAxes from './ChartAxes'
+import { CHART_HEIGHT, CHART_MARGIN, buildLinePath, createChartScale } from './chartScale'
 import { useElementWidth } from '../../hooks/useElementWidth'
-import { formatDate, formatFullNumber, formatNumber } from '../../utils/formatters'
-
-const HEIGHT = 200
-const MARGIN = { top: 16, right: 16, bottom: 28, left: 52 }
-const GRID_LINES = 3
+import { formatDate, formatFullNumber } from '../../utils/formatters'
 
 /**
  * Gráfico de líneas de una sola serie a lo largo del tiempo (SVG propio, sin librerías).
@@ -22,10 +20,10 @@ export default function LineChart({ title, label, points, colorClass }) {
   const last = points[points.length - 1]
 
   return (
-    <figure className="flex flex-col gap-3 rounded-lg border border-line bg-canvas p-4">
+    <figure className="flex min-w-0 flex-col gap-3 rounded-xl border border-line bg-canvas p-4">
       <figcaption className="flex items-baseline justify-between gap-3">
-        <span className="text-sm font-semibold">{title}</span>
-        <span className="font-mono text-sm">
+        <span className="font-mono text-2xs tracking-[0.14em] text-muted uppercase">{title}</span>
+        <span className="font-mono text-lg font-medium tabular-nums">
           <span className="sr-only">Último valor: </span>
           {formatFullNumber(last.value)}
         </span>
@@ -80,29 +78,12 @@ export default function LineChart({ title, label, points, colorClass }) {
 }
 
 function ChartSvg({ width, points, label, descriptionId, activeIndex, onActiveChange }) {
-  const plotWidth = Math.max(width - MARGIN.left - MARGIN.right, 1)
-  const plotHeight = HEIGHT - MARGIN.top - MARGIN.bottom
+  const scale = createChartScale(points, width)
+  const xOf = (index) => scale.xOfDate(points[index].date)
+  const { yOf, baselineY } = scale
 
-  // Escala X: tiempo. Escala Y: del mínimo al máximo con un poco de aire.
-  const times = points.map((point) => new Date(point.date).getTime())
-  const minTime = times[0]
-  const timeRange = times[times.length - 1] - minTime || 1
-
-  const values = points.map((point) => point.value)
-  const minValue = Math.min(...values)
-  const maxValue = Math.max(...values)
-  const padding = (maxValue - minValue) * 0.15 || Math.max(1, maxValue * 0.01)
-  const yMin = Math.max(0, minValue - padding)
-  const yMax = maxValue + padding
-
-  const xOf = (index) => MARGIN.left + ((times[index] - minTime) / timeRange) * plotWidth
-  const yOf = (value) => MARGIN.top + (1 - (value - yMin) / (yMax - yMin)) * plotHeight
-
-  const linePath = points.map((point, index) => `${index === 0 ? 'M' : 'L'}${xOf(index)},${yOf(point.value)}`).join(' ')
-  const baselineY = MARGIN.top + plotHeight
+  const linePath = buildLinePath(points, scale)
   const areaPath = `${linePath} L${xOf(points.length - 1)},${baselineY} L${xOf(0)},${baselineY} Z`
-
-  const gridValues = Array.from({ length: GRID_LINES }, (_, index) => yMin + ((yMax - yMin) * index) / (GRID_LINES - 1))
 
   const lastIndex = points.length - 1
   const shownIndex = activeIndex ?? lastIndex
@@ -135,7 +116,7 @@ function ChartSvg({ width, points, label, descriptionId, activeIndex, onActiveCh
     <>
       <svg
         width={width}
-        height={HEIGHT}
+        height={CHART_HEIGHT}
         role="group"
         aria-label={`Gráfico de ${label.toLowerCase()}`}
         aria-describedby={descriptionId}
@@ -145,47 +126,28 @@ function ChartSvg({ width, points, label, descriptionId, activeIndex, onActiveCh
         onBlur={() => onActiveChange(null)}
         className="block overflow-visible rounded focus-visible:outline-2 focus-visible:outline-offset-4 animate-fade-in"
       >
-        {/* Rejilla y eje Y */}
-        {gridValues.map((value) => (
-          <g key={value}>
-            <line
-              x1={MARGIN.left}
-              x2={MARGIN.left + plotWidth}
-              y1={yOf(value)}
-              y2={yOf(value)}
-              stroke="var(--color-line)"
-              strokeWidth="1"
-            />
-            <text
-              x={MARGIN.left - 8}
-              y={yOf(value)}
-              textAnchor="end"
-              dominantBaseline="middle"
-              className="fill-muted font-mono text-[1.1rem]"
-            >
-              {formatNumber(Math.round(value))}
-            </text>
-          </g>
-        ))}
-
-        {/* Eje X: primera y última fecha */}
-        <text x={xOf(0)} y={HEIGHT - 6} textAnchor="start" className="fill-muted text-[1.1rem]">
-          {formatDate(points[0].date)}
-        </text>
-        <text x={xOf(lastIndex)} y={HEIGHT - 6} textAnchor="end" className="fill-muted text-[1.1rem]">
-          {formatDate(points[lastIndex].date)}
-        </text>
+        <ChartAxes scale={scale} />
 
         {/* Serie */}
-        <path d={areaPath} fill="currentColor" fillOpacity="0.1" />
-        <path d={linePath} fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+        <path d={areaPath} fill="currentColor" fillOpacity="0.08" className="animate-fade-in [animation-delay:200ms] [animation-duration:500ms]" />
+        <path
+          d={linePath}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+          pathLength="1"
+          strokeDasharray="1"
+          className="animate-draw motion-reduce:animate-none"
+        />
 
         {/* Línea vertical que sigue al puntero */}
         {activeIndex !== null && (
           <line
             x1={tooltipX}
             x2={tooltipX}
-            y1={MARGIN.top}
+            y1={CHART_MARGIN.top}
             y2={baselineY}
             stroke="var(--color-muted)"
             strokeWidth="1"
@@ -207,7 +169,7 @@ function ChartSvg({ width, points, label, descriptionId, activeIndex, onActiveCh
           x={0}
           y={0}
           width={width}
-          height={HEIGHT}
+          height={CHART_HEIGHT}
           fill="transparent"
           onPointerMove={handlePointerMove}
           onPointerLeave={() => onActiveChange(null)}
@@ -218,11 +180,11 @@ function ChartSvg({ width, points, label, descriptionId, activeIndex, onActiveCh
         <div
           role="status"
           style={{
-            top: `${MARGIN.top}px`,
+            top: `${CHART_MARGIN.top}px`,
             left: tooltipOnLeft ? 'auto' : `${tooltipX + 12}px`,
             right: tooltipOnLeft ? `${width - tooltipX + 12}px` : 'auto',
           }}
-          className="pointer-events-none absolute flex flex-col gap-0.5 rounded-lg border border-line bg-surface px-3 py-2 text-xs shadow-lg animate-fade-in"
+          className="pointer-events-none absolute z-10 flex flex-col gap-0.5 rounded-lg border border-line-strong bg-raised px-3 py-2 text-xs shadow-pop"
         >
           <span className="flex items-center gap-2 font-mono text-sm font-semibold text-fg">
             <span aria-hidden="true" className="h-0.5 w-3 rounded-full bg-current" />
