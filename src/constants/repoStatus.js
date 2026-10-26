@@ -1,12 +1,12 @@
 // Estados de seguimiento de un repositorio guardado.
-// value coincide con la restricción CHECK de user_repositories.status.
+// value coincide con la restricción CHECK de user_repositories.status. labelKey: clave de traducción.
 
 export const DEFAULT_STATUS = 'to_learn'
 
 export const STATUS_OPTIONS = [
-  { value: 'to_learn', label: 'Por aprender', dotClass: 'bg-info', badgeClass: 'border-info/40 bg-info/10 text-info' },
-  { value: 'in_progress', label: 'En progreso', dotClass: 'bg-star', badgeClass: 'border-star/40 bg-star/10 text-star' },
-  { value: 'completed', label: 'Completado', dotClass: 'bg-accent', badgeClass: 'border-accent/40 bg-accent-soft text-accent' },
+  { value: 'to_learn', labelKey: 'status.to_learn', dotClass: 'bg-info', badgeClass: 'border-info/40 bg-info/10 text-info' },
+  { value: 'in_progress', labelKey: 'status.in_progress', dotClass: 'bg-star', badgeClass: 'border-star/40 bg-star/10 text-star' },
+  { value: 'completed', labelKey: 'status.completed', dotClass: 'bg-accent', badgeClass: 'border-accent/40 bg-accent-soft text-accent' },
 ]
 
 // Filtros de la colección guardada sin aplicar (todos los estados y todas las etiquetas).

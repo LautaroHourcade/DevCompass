@@ -3,10 +3,11 @@
 // La tabla compartida repositories solo la escribe el servidor (ver saveRepo).
 import { supabase } from '../lib/supabase'
 import { getCurrentUser } from './authService'
+import { TranslatableError } from '../i18n/TranslatableError'
 
 async function getUserIdOrThrow() {
   const user = await getCurrentUser()
-  if (!user) throw new Error('Inicia sesión para guardar repositorios.')
+  if (!user) throw new TranslatableError('errors.saved.signIn')
   return user.id
 }
 
@@ -61,22 +62,18 @@ export async function getSavedRepos() {
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
 
-  if (error) throw new Error('No se pudieron cargar tus repositorios guardados.')
+  if (error) throw new TranslatableError('errors.saved.load')
 
   return data.map(toAppRepo)
 }
 
-/**
- * Lee el mensaje de error que devuelve una Edge Function ({ error: "..." }).
- * Si no se puede leer, usa el mensaje genérico.
- */
-async function getFunctionErrorMessage(error, fallback) {
-  try {
-    const body = await error.context?.json()
-    return body?.error || fallback
-  } catch {
-    return fallback
-  }
+// Código HTTP de la Edge Function save-repository -> clave del mensaje para el usuario.
+// El texto que devuelve la función está en español: aquí se elige el mensaje en el idioma de la interfaz.
+const SAVE_ERROR_KEYS = {
+  401: 'errors.saved.signIn',
+  404: 'errors.saved.notAvailable',
+  429: 'errors.saved.rateLimited',
+  502: 'errors.saved.githubDown',
 }
 
 /**
@@ -93,7 +90,7 @@ export async function saveRepo(repo) {
   })
 
   if (error) {
-    throw new Error(await getFunctionErrorMessage(error, 'No se pudo guardar el repositorio. Inténtalo de nuevo.'))
+    throw new TranslatableError(SAVE_ERROR_KEYS[error.context?.status] ?? 'errors.saved.save')
   }
 
   return getSavedRepos()
@@ -108,7 +105,7 @@ export async function removeRepo(repoId) {
     .eq('github_id', repoId)
     .maybeSingle()
 
-  if (lookupError) throw new Error('No se pudo quitar el repositorio. Inténtalo de nuevo.')
+  if (lookupError) throw new TranslatableError('errors.saved.remove')
 
   if (stored) {
     const { error: deleteError } = await supabase
@@ -117,7 +114,7 @@ export async function removeRepo(repoId) {
       .eq('user_id', userId)
       .eq('repository_id', stored.id)
 
-    if (deleteError) throw new Error('No se pudo quitar el repositorio. Inténtalo de nuevo.')
+    if (deleteError) throw new TranslatableError('errors.saved.remove')
   }
 
   return getSavedRepos()
@@ -127,7 +124,7 @@ export async function removeRepo(repoId) {
  * Actualiza el seguimiento de un repositorio guardado (solo status y notes son editables).
  * Si RLS no deja actualizar la fila, .single() falla y lo tratamos como error.
  */
-async function updateSavedRepo(savedId, changes, errorMessage) {
+async function updateSavedRepo(savedId, changes, errorKey) {
   const { error } = await supabase
     .from('user_repositories')
     .update(changes)
@@ -135,20 +132,20 @@ async function updateSavedRepo(savedId, changes, errorMessage) {
     .select('id')
     .single()
 
-  if (error) throw new Error(errorMessage)
+  if (error) throw new TranslatableError(errorKey)
 }
 
 export function updateSavedRepoStatus(savedId, status) {
-  return updateSavedRepo(savedId, { status }, 'No se pudo cambiar el estado. Inténtalo de nuevo.')
+  return updateSavedRepo(savedId, { status }, 'errors.saved.status')
 }
 
 /** Guarda la nota. Una nota vacía equivale a borrarla. Devuelve la nota guardada. */
 export async function updateSavedRepoNote(savedId, notes) {
   const trimmedNotes = notes.trim()
-  await updateSavedRepo(savedId, { notes: trimmedNotes || null }, 'No se pudo guardar la nota. Inténtalo de nuevo.')
+  await updateSavedRepo(savedId, { notes: trimmedNotes || null }, 'errors.saved.saveNote')
   return trimmedNotes
 }
 
 export function deleteSavedRepoNote(savedId) {
-  return updateSavedRepo(savedId, { notes: null }, 'No se pudo borrar la nota. Inténtalo de nuevo.')
+  return updateSavedRepo(savedId, { notes: null }, 'errors.saved.deleteNote')
 }

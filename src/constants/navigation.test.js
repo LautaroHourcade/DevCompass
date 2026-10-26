@@ -3,10 +3,10 @@ import { formatBearing, getSectionForPath } from './navigation'
 
 describe('getSectionForPath', () => {
   it('reconoce cada sección, también en sus subrutas', () => {
-    expect(getSectionForPath('/').label).toBe('Explorar')
-    expect(getSectionForPath('/panel').label).toBe('Panel')
-    expect(getSectionForPath('/listas/123').label).toBe('Listas')
-    expect(getSectionForPath('/perfil').label).toBe('Perfil')
+    expect(getSectionForPath('/').labelKey).toBe('nav.explore')
+    expect(getSectionForPath('/panel').labelKey).toBe('nav.dashboard')
+    expect(getSectionForPath('/listas/123').labelKey).toBe('nav.lists')
+    expect(getSectionForPath('/perfil').labelKey).toBe('nav.profile')
   })
 
   it('devuelve null en rutas que no son una sección', () => {

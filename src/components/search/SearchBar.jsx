@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { CloseIcon, SearchIcon } from '../ui/Icons'
+import { useTranslation } from '../../hooks/useTranslation'
 
 // Elementos donde "/" se escribe con normalidad en lugar de saltar al buscador.
 const EDITABLE_TAGS = ['INPUT', 'TEXTAREA', 'SELECT']
@@ -7,6 +8,7 @@ const EDITABLE_TAGS = ['INPUT', 'TEXTAREA', 'SELECT']
 /** Buscador principal con aspecto de barra de comandos. Atajo: "/" lo enfoca desde cualquier parte. */
 export default function SearchBar({ value, onChange }) {
   const inputRef = useRef(null)
+  const { t } = useTranslation()
 
   useEffect(() => {
     function handleKeyDown(event) {
@@ -40,7 +42,7 @@ export default function SearchBar({ value, onChange }) {
   return (
     <form role="search" onSubmit={handleSubmit} className="group relative">
       <label htmlFor="repo-search" className="sr-only">
-        Buscar repositorios
+        {t('explore.search.label')}
       </label>
       <SearchIcon className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-muted transition-colors duration-150 group-focus-within:text-accent" />
       <input
@@ -49,7 +51,7 @@ export default function SearchBar({ value, onChange }) {
         type="search"
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        placeholder="Busca por nombre, tema o descripción…"
+        placeholder={t('explore.search.placeholder')}
         autoComplete="off"
         spellCheck="false"
         className="h-14 w-full rounded-xl border border-line-strong bg-surface pr-14 pl-12 text-base text-fg shadow-card transition-[border-color,box-shadow] duration-150 ease-out placeholder:text-subtle hover:border-[color-mix(in_oklab,var(--color-fg),transparent_70%)] focus:border-accent focus:ring-4 focus:ring-accent-soft focus:outline-none"
@@ -58,7 +60,7 @@ export default function SearchBar({ value, onChange }) {
         <button
           type="button"
           onClick={handleClear}
-          aria-label="Borrar búsqueda"
+          aria-label={t('explore.search.clear')}
           className="absolute top-1/2 right-3 flex size-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-md text-muted transition-[background-color,color,scale] duration-150 hover:bg-surface-2 hover:text-fg active:scale-[0.94]"
         >
           <CloseIcon className="size-4" />
@@ -66,7 +68,7 @@ export default function SearchBar({ value, onChange }) {
       ) : (
         <kbd
           aria-hidden="true"
-          title="Pulsa / para buscar"
+          title={t('explore.search.shortcut')}
           className="kbd pointer-events-none absolute top-1/2 right-4 hidden -translate-y-1/2 sm:inline-flex"
         >
           /

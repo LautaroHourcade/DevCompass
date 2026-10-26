@@ -1,13 +1,16 @@
 import RepoCard from './RepoCard'
 import SkeletonCard from '../ui/SkeletonCard'
+import { useTranslation } from '../../hooks/useTranslation'
 
 const SKELETON_COUNT = 6
 const GRID_CLASSES = 'grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'
 
 export default function RepoGrid({ repos, isLoading = false, isSaved, onToggleSave, onOpenDetail, renderTracking, renderActions }) {
+  const { t } = useTranslation()
+
   if (isLoading) {
     return (
-      <ul className={GRID_CLASSES} aria-busy="true" aria-label="Cargando repositorios">
+      <ul className={GRID_CLASSES} aria-busy="true" aria-label={t('repo.loadingRepos')}>
         {Array.from({ length: SKELETON_COUNT }, (_, index) => (
           <li key={index}>
             <SkeletonCard />

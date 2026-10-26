@@ -4,6 +4,7 @@
 // Las etiquetas (tagIds) solo clasifican la lista: no cambian qué repositorios contiene.
 import { supabase } from '../lib/supabase'
 import { getCurrentUser } from './authService'
+import { TranslatableError } from '../i18n/TranslatableError'
 
 const UNIQUE_VIOLATION_CODE = '23505'
 export const MAX_LIST_NAME_LENGTH = 60
@@ -21,9 +22,9 @@ function toAppList(row) {
   }
 }
 
-function toListError(error, fallbackMessage) {
-  if (error.code === UNIQUE_VIOLATION_CODE) return new Error('Ya tienes una lista con ese nombre.')
-  return new Error(fallbackMessage)
+function toListError(error, fallbackKey) {
+  if (error.code === UNIQUE_VIOLATION_CODE) return new TranslatableError('errors.lists.duplicate')
+  return new TranslatableError(fallbackKey)
 }
 
 export async function getLists() {
@@ -36,14 +37,14 @@ export async function getLists() {
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
 
-  if (error) throw new Error('No se pudieron cargar tus listas.')
+  if (error) throw new TranslatableError('errors.lists.load')
 
   return data.map(toAppList)
 }
 
 export async function createList({ name, description }) {
   const user = await getCurrentUser()
-  if (!user) throw new Error('Inicia sesión para crear listas.')
+  if (!user) throw new TranslatableError('errors.lists.signIn')
 
   const { error } = await supabase.from('lists').insert({
     user_id: user.id,
@@ -51,7 +52,7 @@ export async function createList({ name, description }) {
     description: description.trim() || null,
   })
 
-  if (error) throw toListError(error, 'No se pudo crear la lista. Inténtalo de nuevo.')
+  if (error) throw toListError(error, 'errors.lists.create')
 }
 
 export async function updateList(listId, { name, description }) {
@@ -60,13 +61,13 @@ export async function updateList(listId, { name, description }) {
     .update({ name: name.trim(), description: description.trim() || null })
     .eq('id', listId)
 
-  if (error) throw toListError(error, 'No se pudo guardar la lista. Inténtalo de nuevo.')
+  if (error) throw toListError(error, 'errors.lists.update')
 }
 
 export async function deleteList(listId) {
   const { error } = await supabase.from('lists').delete().eq('id', listId)
 
-  if (error) throw new Error('No se pudo eliminar la lista. Inténtalo de nuevo.')
+  if (error) throw new TranslatableError('errors.lists.delete')
 }
 
 export async function addRepoToList(listId, savedId) {
@@ -76,7 +77,7 @@ export async function addRepoToList(listId, savedId) {
 
   // Si ya estaba en la lista no es un error.
   if (error && error.code !== UNIQUE_VIOLATION_CODE) {
-    throw new Error('No se pudo añadir el repositorio a la lista.')
+    throw new TranslatableError('errors.lists.addRepo')
   }
 }
 
@@ -87,7 +88,7 @@ export async function removeRepoFromList(listId, savedId) {
     .eq('list_id', listId)
     .eq('user_repository_id', savedId)
 
-  if (error) throw new Error('No se pudo quitar el repositorio de la lista.')
+  if (error) throw new TranslatableError('errors.lists.removeRepo')
 }
 
 export async function addTagToList(listId, tagId) {
@@ -95,12 +96,12 @@ export async function addTagToList(listId, tagId) {
 
   // Si ya tenía la etiqueta no es un error.
   if (error && error.code !== UNIQUE_VIOLATION_CODE) {
-    throw new Error('No se pudo añadir la etiqueta a la lista.')
+    throw new TranslatableError('errors.lists.addTag')
   }
 }
 
 export async function removeTagFromList(listId, tagId) {
   const { error } = await supabase.from('list_tags').delete().eq('list_id', listId).eq('tag_id', tagId)
 
-  if (error) throw new Error('No se pudo quitar la etiqueta de la lista.')
+  if (error) throw new TranslatableError('errors.lists.removeTag')
 }

@@ -4,13 +4,16 @@ import MobileMenu from './MobileMenu'
 import NavTabs from './NavTabs'
 import ThemeToggle from './ThemeToggle'
 import UserMenu from './UserMenu'
+import LanguageToggle from './LanguageToggle'
 import { CompassMark, MenuIcon } from '../ui/Icons'
 import { buttonClasses } from '../ui/buttonStyles'
 import { NAV_ITEMS, getSectionForPath } from '../../constants/navigation'
 import { useShortestRotation } from '../../hooks/useShortestRotation'
+import { useTranslation } from '../../hooks/useTranslation'
 
 export default function Header({ user, savedCount, theme, onToggleTheme, onSignOut }) {
   const location = useLocation()
+  const { t } = useTranslation()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   const visibleItems = NAV_ITEMS.filter((item) => !item.requiresAuth || user)
@@ -29,7 +32,7 @@ export default function Header({ user, savedCount, theme, onToggleTheme, onSignO
         <Link to="/" className="flex shrink-0 items-center gap-2.5 rounded-lg">
           <CompassMark bearing={needleRotation} className="size-8 text-fg" />
           <span className="text-[1.6rem] font-semibold tracking-[-0.02em]">DevCompass</span>
-          <span className="sr-only">, ir a Explorar</span>
+          <span className="sr-only">{t('header.goToExplore')}</span>
         </Link>
 
         {/* Móvil: el nombre de la sección actual junto a la marca */}
@@ -38,7 +41,7 @@ export default function Header({ user, savedCount, theme, onToggleTheme, onSignO
             <span aria-hidden="true" className="text-line-strong">
               /
             </span>
-            <span className="truncate">{section.label}</span>
+            <span className="truncate">{t(section.labelKey)}</span>
           </p>
         )}
 
@@ -47,6 +50,7 @@ export default function Header({ user, savedCount, theme, onToggleTheme, onSignO
         </div>
 
         <div className="ml-auto flex items-center gap-1 lg:ml-0">
+          <LanguageToggle className="hidden lg:inline-flex" />
           <ThemeToggle theme={theme} onToggle={onToggleTheme} className="hidden lg:inline-flex" />
           {user ? (
             <div className="hidden lg:block">
@@ -54,13 +58,13 @@ export default function Header({ user, savedCount, theme, onToggleTheme, onSignO
             </div>
           ) : (
             <Link to="/entrar" className={buttonClasses({ variant: 'primary', size: 'sm', className: 'hidden lg:inline-flex' })}>
-              Entrar
+              {t('header.signIn')}
             </Link>
           )}
           <button
             type="button"
             onClick={handleOpenMenu}
-            aria-label="Abrir menú"
+            aria-label={t('header.openMenu')}
             aria-expanded={isMenuOpen}
             className={buttonClasses({ variant: 'ghost', size: 'icon', className: 'lg:hidden' })}
           >

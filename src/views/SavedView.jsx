@@ -13,6 +13,7 @@ import { BookmarkIcon, CompareIcon, FilterIcon, ListIcon, TagIcon } from '../com
 import { buttonClasses } from '../components/ui/buttonStyles'
 import { EMPTY_SAVED_FILTERS, getStatusOption } from '../constants/repoStatus'
 import { useToast } from '../hooks/useToast'
+import { useTranslation } from '../hooks/useTranslation'
 
 /**
  * tracking: acciones de seguimiento de useSavedRepos (updateStatus, updateNote, deleteNote, addTag, removeTag).
@@ -31,6 +32,7 @@ export default function SavedView({
   tracking,
 }) {
   const { showToast } = useToast()
+  const { t } = useTranslation()
   const [filters, setFilters] = useState(EMPTY_SAVED_FILTERS)
   // Guardamos el id y buscamos el repo en cada render para que los diálogos vean siempre los datos al día.
   const [repoIdForLists, setRepoIdForLists] = useState(null)
@@ -71,7 +73,7 @@ export default function SavedView({
   async function handleChangeStatus(repo, status) {
     try {
       await tracking.updateStatus(repo.savedId, status)
-      showToast(`"${repo.name}" ahora está en «${getStatusOption(status).label}»`, 'success')
+      showToast(t('saved.toast.statusChanged', { name: repo.name, status: t(getStatusOption(status).labelKey) }), 'success')
     } catch (error) {
       showToast(error.message, 'error')
     }
@@ -80,7 +82,7 @@ export default function SavedView({
   async function handleRemoveTag(repo, tag) {
     try {
       await tracking.removeTag(repo.savedId, tag.id)
-      showToast(`Etiqueta "${tag.name}" quitada de "${repo.name}"`, 'info')
+      showToast(t('saved.toast.tagRemoved', { tag: tag.name, name: repo.name }), 'info')
     } catch (error) {
       showToast(error.message, 'error')
     }
@@ -88,12 +90,12 @@ export default function SavedView({
 
   async function handleSaveNote(repo, notes) {
     await tracking.updateNote(repo.savedId, notes)
-    showToast(notes.trim() ? 'Nota guardada' : 'Nota borrada', notes.trim() ? 'success' : 'info')
+    showToast(notes.trim() ? t('saved.toast.noteSaved') : t('saved.toast.noteDeleted'), notes.trim() ? 'success' : 'info')
   }
 
   async function handleDeleteNote(repo) {
     await tracking.deleteNote(repo.savedId)
-    showToast('Nota borrada', 'info')
+    showToast(t('saved.toast.noteDeleted'), 'info')
   }
 
   function renderTracking(repo) {
@@ -131,7 +133,7 @@ export default function SavedView({
           className={buttonClasses({ variant: 'ghost', size: 'sm', className: 'flex-1' })}
         >
           <TagIcon className="size-3.5" />
-          Etiquetas
+          {t('nav.tags')}
         </button>
         <button
           type="button"
@@ -139,17 +141,16 @@ export default function SavedView({
           className={buttonClasses({ variant: 'ghost', size: 'sm', className: 'flex-1' })}
         >
           <ListIcon className="size-3.5" />
-          {listCount > 0 ? `En ${listCount} ${listCount === 1 ? 'lista' : 'listas'}` : 'Añadir a lista'}
+          {listCount > 0 ? t('saved.inLists', { count: listCount }) : t('saved.addToList')}
         </button>
       </>
     )
   }
 
   function getDescription() {
-    if (savedLoadError) return 'No pudimos cargar tu colección.'
-    if (isLoading) return 'Cargando tu colección…'
-    if (savedRepos.length === 1) return 'Tienes 1 repositorio en seguimiento.'
-    return `Tienes ${savedRepos.length} repositorios en seguimiento.`
+    if (savedLoadError) return t('saved.loadError')
+    if (isLoading) return t('saved.loading')
+    return t('saved.count', { count: savedRepos.length })
   }
 
   function renderContent() {
@@ -160,11 +161,11 @@ export default function SavedView({
       return (
         <EmptyState
           icon={<BookmarkIcon className="size-6" />}
-          title="Todavía no has guardado nada"
-          message="Pulsa el icono de guardar en cualquier repositorio para tenerlo siempre a mano aquí."
+          title={t('saved.empty.title')}
+          message={t('saved.empty.message')}
           action={
             <Link to="/" className={buttonClasses({ variant: 'primary' })}>
-              Explorar repositorios
+              {t('saved.empty.action')}
             </Link>
           }
         />
@@ -185,11 +186,11 @@ export default function SavedView({
         {filteredRepos.length === 0 ? (
           <EmptyState
             icon={<FilterIcon className="size-6" />}
-            title="Ningún repositorio coincide"
-            message="Prueba con otro estado u otra etiqueta, o restablece los filtros para ver toda tu colección."
+            title={t('saved.noMatch.title')}
+            message={t('saved.noMatch.message')}
             action={
               <button type="button" onClick={handleResetClick} className={buttonClasses({ variant: 'primary' })}>
-                Restablecer filtros
+                {t('saved.filters.reset')}
               </button>
             }
           />
@@ -210,15 +211,15 @@ export default function SavedView({
   return (
     <section aria-labelledby="saved-title" className="flex flex-col gap-6">
       <PageHeader
-        eyebrow="Tu colección"
-        title="Tus repositorios guardados"
+        eyebrow={t('saved.eyebrow')}
+        title={t('saved.title')}
         titleId="saved-title"
         description={getDescription()}
       >
         {savedRepos.length >= 2 && (
           <Link to="/comparar" className={buttonClasses()}>
             <CompareIcon className="size-4" />
-            Comparar
+            {t('nav.compare')}
           </Link>
         )}
       </PageHeader>

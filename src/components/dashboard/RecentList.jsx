@@ -1,6 +1,7 @@
 import LanguageTag from '../repos/LanguageTag'
 import { getStatusOption } from '../../constants/repoStatus'
 import { formatDateTime, formatRelativeDate } from '../../utils/formatters'
+import { useTranslation } from '../../hooks/useTranslation'
 
 /**
  * Lista corta de repositorios con una fecha relativa (guardado o actualizado).
@@ -8,8 +9,10 @@ import { formatDateTime, formatRelativeDate } from '../../utils/formatters'
  * Cada elemento abre el detalle del repositorio.
  */
 export default function RecentList({ repos, dateKey, datePrefix, onOpenDetail }) {
+  const { t } = useTranslation()
+
   if (repos.length === 0) {
-    return <p className="text-sm text-muted">No hay repositorios que mostrar.</p>
+    return <p className="text-sm text-muted">{t('dashboard.noRepos')}</p>
   }
 
   return (
@@ -22,6 +25,7 @@ export default function RecentList({ repos, dateKey, datePrefix, onOpenDetail })
 }
 
 function RecentItem({ repo, dateKey, datePrefix, onOpenDetail }) {
+  const { t } = useTranslation()
   const status = getStatusOption(repo.status)
 
   function handleOpen(event) {
@@ -52,7 +56,7 @@ function RecentItem({ repo, dateKey, datePrefix, onOpenDetail }) {
             {repo.language && <LanguageTag language={repo.language} />}
             <span className="flex items-center gap-1.5">
               <span aria-hidden="true" className={`size-2 rounded-full ${status.dotClass}`} />
-              {status.label}
+              {t(status.labelKey)}
             </span>
           </span>
         </span>

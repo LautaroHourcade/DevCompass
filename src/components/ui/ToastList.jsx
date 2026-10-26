@@ -1,4 +1,5 @@
 import { AlertIcon, CheckIcon, CloseIcon, InfoIcon } from './Icons'
+import { useTranslation } from '../../hooks/useTranslation'
 
 const TOAST_STYLES = {
   success: { Icon: CheckIcon, iconClass: 'bg-accent-soft text-accent' },
@@ -11,9 +12,11 @@ const TOAST_STYLES = {
  * si llegan varias seguidas, las anteriores se recolocan sin saltos. Salen más rápido de lo que entran.
  */
 export default function ToastList({ toasts, onDismiss }) {
+  const { t } = useTranslation()
+
   return (
     <section
-      aria-label="Notificaciones"
+      aria-label={t('toast.region')}
       className="pointer-events-none fixed inset-x-3 bottom-3 z-50 sm:inset-x-auto sm:right-5 sm:bottom-5 sm:w-[38rem]"
     >
       <ol aria-live="polite" className="flex flex-col gap-2">
@@ -40,7 +43,7 @@ export default function ToastList({ toasts, onDismiss }) {
               <button
                 type="button"
                 onClick={handleDismiss}
-                aria-label="Cerrar notificación"
+                aria-label={t('toast.close')}
                 className="flex size-7 cursor-pointer items-center justify-center rounded-md text-muted transition-[background-color,color] duration-150 hover:bg-surface-2 hover:text-fg"
               >
                 <CloseIcon className="size-4" />

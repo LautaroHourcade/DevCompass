@@ -1,6 +1,7 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import PageLoader from '../ui/PageLoader'
 import { useAuth } from '../../hooks/useAuth'
+import { useTranslation } from '../../hooks/useTranslation'
 
 /**
  * Rutas que exigen sesión. Sin usuario redirige a /entrar recordando la ruta pedida,
@@ -9,8 +10,9 @@ import { useAuth } from '../../hooks/useAuth'
 export function ProtectedRoute() {
   const { user, isLoading } = useAuth()
   const location = useLocation()
+  const { t } = useTranslation()
 
-  if (isLoading) return <PageLoader label="Comprobando tu sesión…" />
+  if (isLoading) return <PageLoader label={t('auth.checkingSession')} />
 
   if (!user) {
     return <Navigate to="/entrar" replace state={{ from: location.pathname }} />
@@ -26,8 +28,9 @@ export function ProtectedRoute() {
 export function PublicOnlyRoute() {
   const { user, isLoading } = useAuth()
   const location = useLocation()
+  const { t } = useTranslation()
 
-  if (isLoading) return <PageLoader label="Comprobando tu sesión…" />
+  if (isLoading) return <PageLoader label={t('auth.checkingSession')} />
 
   if (user) {
     return <Navigate to={location.state?.from ?? '/'} replace />

@@ -18,6 +18,7 @@ import {
   getRecentlySaved,
   getRecentlyUpdated,
 } from '../utils/collectionStats'
+import { useTranslation } from '../hooks/useTranslation'
 
 const RECENT_LIMIT = 5
 
@@ -25,6 +26,8 @@ const sectionLinkClasses = buttonClasses({ variant: 'ghost', size: 'sm' })
 
 /** Panel: resumen de la colección, lenguajes, estadísticas agregadas y actividad reciente. */
 export default function DashboardView({ savedRepos, isLoading, savedLoadError, onReloadSaved, onOpenDetail }) {
+  const { t } = useTranslation()
+
   // Todo se calcula en el navegador a partir de la colección ya cargada.
   const summary = useMemo(
     () => ({
@@ -39,18 +42,18 @@ export default function DashboardView({ savedRepos, isLoading, savedLoadError, o
 
   function renderContent() {
     if (savedLoadError) return <ErrorMessage error={savedLoadError} onRetry={onReloadSaved} />
-    if (isLoading && savedRepos.length === 0) return <PageLoader label="Cargando tu colección…" />
+    if (isLoading && savedRepos.length === 0) return <PageLoader label={t('saved.loading')} />
 
     if (savedRepos.length === 0) {
       return (
         <EmptyState
           icon={<DashboardIcon className="size-6" />}
-          title="Tu panel está vacío"
-          message="Guarda algunos repositorios y aquí verás el resumen de tu colección, sus lenguajes y la actividad reciente."
+          title={t('dashboard.empty.title')}
+          message={t('dashboard.empty.message')}
           action={
             <Link to="/" className={buttonClasses({ variant: 'primary' })}>
               <SearchIcon className="size-4" />
-              Explorar repositorios
+              {t('saved.empty.action')}
             </Link>
           }
         />
@@ -62,20 +65,20 @@ export default function DashboardView({ savedRepos, isLoading, savedLoadError, o
         <SummaryCards total={savedRepos.length} statusCounts={summary.statusCounts} />
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <DashboardCard title="Lenguajes" style={{ animationDelay: '80ms' }}>
+          <DashboardCard title={t('repo.languages')} style={{ animationDelay: '80ms' }}>
             <LanguageDistribution languages={summary.languages} />
           </DashboardCard>
 
-          <DashboardCard title="Estadísticas" style={{ animationDelay: '120ms' }}>
+          <DashboardCard title={t('dashboard.stats')} style={{ animationDelay: '120ms' }}>
             <CollectionStats totals={summary.totals} onOpenDetail={onOpenDetail} />
           </DashboardCard>
 
           <DashboardCard
-            title="Guardados recientemente"
+            title={t('dashboard.recentlySaved')}
             style={{ animationDelay: '160ms' }}
             action={
               <Link to="/guardados" className={sectionLinkClasses}>
-                Ver colección
+                {t('dashboard.viewCollection')}
                 <ArrowRightIcon className="size-3.5" />
               </Link>
             }
@@ -83,16 +86,16 @@ export default function DashboardView({ savedRepos, isLoading, savedLoadError, o
             <RecentList
               repos={summary.recentlySaved}
               dateKey="savedAt"
-              datePrefix="Guardado"
+              datePrefix={t('repo.saved')}
               onOpenDetail={onOpenDetail}
             />
           </DashboardCard>
 
-          <DashboardCard title="Actividad reciente en GitHub" style={{ animationDelay: '200ms' }}>
+          <DashboardCard title={t('dashboard.recentActivity')} style={{ animationDelay: '200ms' }}>
             <RecentList
               repos={summary.recentlyUpdated}
               dateKey="updatedAt"
-              datePrefix="Actualizado en GitHub"
+              datePrefix={t('dashboard.updatedOnGitHub')}
               onOpenDetail={onOpenDetail}
             />
           </DashboardCard>
@@ -104,18 +107,18 @@ export default function DashboardView({ savedRepos, isLoading, savedLoadError, o
   return (
     <section aria-labelledby="dashboard-title" className="flex flex-col gap-6">
       <PageHeader
-        eyebrow="Resumen de tu colección"
-        title="Tu panel"
+        eyebrow={t('dashboard.eyebrow')}
+        title={t('dashboard.title')}
         titleId="dashboard-title"
-        description="Un vistazo rápido a tu colección y a lo último que ha pasado en ella."
+        description={t('dashboard.description')}
       >
-        <nav aria-label="Accesos rápidos" className="flex flex-wrap gap-2">
+        <nav aria-label={t('dashboard.shortcuts')} className="flex flex-wrap gap-2">
           <Link to="/guardados" className={buttonClasses()}>
-            Ver colección
+            {t('dashboard.viewCollection')}
           </Link>
           <Link to="/comparar" className={buttonClasses({ variant: 'primary' })}>
             <CompareIcon className="size-4" />
-            Comparar
+            {t('nav.compare')}
           </Link>
         </nav>
       </PageHeader>

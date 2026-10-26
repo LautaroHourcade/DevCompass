@@ -11,8 +11,14 @@ describe('validación de formularios', () => {
   })
 
   it('exige contraseñas de al menos 8 caracteres', () => {
-    expect(getPasswordError('1234567')).not.toBe('')
-    expect(getPasswordError('12345678')).toBe('')
+    expect(getPasswordError('abc1234')).not.toBe('')
+    expect(getPasswordError('abcd1234')).toBe('')
+  })
+
+  it('exige que la contraseña combine letras y números', () => {
+    expect(getPasswordError('12345678')).not.toBe('')
+    expect(getPasswordError('contraseña')).not.toBe('')
+    expect(getPasswordError('contraseña1')).toBe('')
   })
 
   it('comprueba que la confirmación coincide', () => {

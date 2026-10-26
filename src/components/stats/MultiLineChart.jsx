@@ -3,6 +3,7 @@ import ChartAxes from './ChartAxes'
 import { CHART_HEIGHT, CHART_MARGIN, buildLinePath, createChartScale } from './chartScale'
 import { useElementWidth } from '../../hooks/useElementWidth'
 import { formatDate, formatFullNumber } from '../../utils/formatters'
+import { useTranslation } from '../../hooks/useTranslation'
 
 // Las capturas son diarias: comparamos las series por día (YYYY-MM-DD).
 const toDay = (isoDate) => isoDate.slice(0, 10)
@@ -16,6 +17,7 @@ const formatDay = (day) => formatDate(`${day}T12:00:00`)
  * Al pasar el ratón (o con las flechas del teclado) muestra el valor de cada serie ese día.
  */
 export default function MultiLineChart({ title, label, series }) {
+  const { t } = useTranslation()
   const [containerRef, width] = useElementWidth()
   const [activeIndex, setActiveIndex] = useState(null)
   const descriptionId = useId()
@@ -35,7 +37,7 @@ export default function MultiLineChart({ title, label, series }) {
     <figure className="flex min-w-0 flex-col gap-3 rounded-xl border border-line bg-canvas p-4">
       <figcaption className="font-mono text-2xs tracking-[0.14em] text-muted uppercase">{title}</figcaption>
 
-      <ul aria-label="Leyenda" className="flex flex-wrap gap-x-5 gap-y-1 text-sm">
+      <ul aria-label={t('chart.legend')} className="flex flex-wrap gap-x-5 gap-y-1 text-sm">
         {series.map((serie) => (
           <li key={serie.id} className="flex min-w-0 items-center gap-2">
             <span aria-hidden="true" className="h-1 w-4 shrink-0 rounded-full" style={{ backgroundColor: serie.color }} />
@@ -45,9 +47,12 @@ export default function MultiLineChart({ title, label, series }) {
       </ul>
 
       <p id={descriptionId} className="sr-only">
-        {`${label} de ${series.length} repositorios entre el ${formatDay(days[0])} y el ${formatDay(
-          days[days.length - 1],
-        )}. Usa las flechas para recorrer los días.`}
+        {t('chart.multiDescription', {
+          label,
+          count: series.length,
+          from: formatDay(days[0]),
+          to: formatDay(days[days.length - 1]),
+        })}
       </p>
 
       <div ref={containerRef} className="relative">
@@ -67,13 +72,13 @@ export default function MultiLineChart({ title, label, series }) {
       </div>
 
       <details className="text-xs text-muted">
-        <summary className="w-fit cursor-pointer rounded hover:text-fg">Ver los datos</summary>
+        <summary className="w-fit cursor-pointer rounded hover:text-fg">{t('chart.showData')}</summary>
         <div className="mt-2 max-h-[20rem] overflow-auto">
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-line">
                 <th scope="col" className="py-1 pr-3 font-medium">
-                  Fecha
+                  {t('chart.date')}
                 </th>
                 {series.map((serie) => (
                   <th key={serie.id} scope="col" className="py-1 pl-3 text-right font-medium">
@@ -105,6 +110,7 @@ export default function MultiLineChart({ title, label, series }) {
 }
 
 function ChartSvg({ width, series, days, dayDates, label, descriptionId, activeIndex, onActiveChange, valueOn }) {
+  const { t } = useTranslation()
   const scale = createChartScale(
     series.flatMap((serie) => serie.points),
     width,
@@ -143,7 +149,7 @@ function ChartSvg({ width, series, days, dayDates, label, descriptionId, activeI
         width={width}
         height={CHART_HEIGHT}
         role="group"
-        aria-label={`Gráfico comparativo de ${label.toLowerCase()}`}
+        aria-label={t('chart.compareAriaLabel', { label })}
         aria-describedby={descriptionId}
         tabIndex={0}
         onKeyDown={handleKeyDown}
@@ -241,7 +247,7 @@ function ChartSvg({ width, series, days, dayDates, label, descriptionId, activeI
                 <span aria-hidden="true" className="h-0.5 w-3 shrink-0 rounded-full" style={{ backgroundColor: serie.color }} />
                 <span className="truncate">{serie.label}</span>
                 <span className="ml-auto pl-2 font-mono font-semibold">
-                  {value === undefined ? 'sin captura' : formatFullNumber(value)}
+                  {value === undefined ? t('chart.noSnapshot') : formatFullNumber(value)}
                 </span>
               </span>
             )

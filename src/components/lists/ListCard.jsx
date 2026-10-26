@@ -3,9 +3,11 @@ import TagChip from '../tags/TagChip'
 import { EditIcon, ListIcon, TagIcon, TrashIcon } from '../ui/Icons'
 import { buttonClasses } from '../ui/buttonStyles'
 import { formatRelativeDate } from '../../utils/formatters'
+import { useTranslation } from '../../hooks/useTranslation'
 
 /** tags: etiquetas de la lista ya resueltas ({ id, name }). onEditTags abre el selector de etiquetas. */
 export default function ListCard({ list, tags, index, onEdit, onEditTags, onDelete }) {
+  const { t } = useTranslation()
   const repoCount = list.savedIds.length
 
   function handleEdit(event) {
@@ -43,18 +45,18 @@ export default function ListCard({ list, tags, index, onEdit, onEditTags, onDele
             </Link>
           </h2>
           <p className="font-mono text-xs text-muted tabular-nums">
-            {repoCount === 1 ? '1 repositorio' : `${repoCount} repositorios`} · actualizada{' '}
+            {t('lists.card.repoCount', { count: repoCount })} · {t('lists.card.updated')}{' '}
             <time dateTime={list.updatedAt}>{formatRelativeDate(list.updatedAt)}</time>
           </p>
         </div>
       </header>
 
       <div className="flex-1">
-        <p className="line-clamp-3 text-sm text-muted">{list.description || 'Sin descripción.'}</p>
+        <p className="line-clamp-3 text-sm text-muted">{list.description || t('lists.card.noDescription')}</p>
       </div>
 
       {tags.length > 0 && (
-        <ul aria-label="Etiquetas de la lista" className="relative z-10 flex flex-wrap gap-1.5">
+        <ul aria-label={t('lists.tagsLabel')} className="relative z-10 flex flex-wrap gap-1.5">
           {tags.map((tag) => (
             <li key={tag.id}>
               <TagChip name={tag.name} />
@@ -65,13 +67,13 @@ export default function ListCard({ list, tags, index, onEdit, onEditTags, onDele
 
       <footer className="relative z-10 flex gap-1 border-t border-line pt-3">
         <Link to={`/listas/${list.id}`} className={buttonClasses({ size: 'sm', className: 'mr-auto' })}>
-          Abrir lista
+          {t('lists.card.open')}
         </Link>
         <button
           type="button"
           onClick={handleEditTags}
-          aria-label={`Etiquetas de la lista ${list.name}`}
-          title="Etiquetas"
+          aria-label={t('lists.card.tagsOf', { name: list.name })}
+          title={t('nav.tags')}
           className={buttonClasses({ variant: 'ghost', size: 'sm' })}
         >
           <TagIcon className="size-4" />
@@ -79,8 +81,8 @@ export default function ListCard({ list, tags, index, onEdit, onEditTags, onDele
         <button
           type="button"
           onClick={handleEdit}
-          aria-label={`Editar la lista ${list.name}`}
-          title="Editar"
+          aria-label={t('lists.card.edit', { name: list.name })}
+          title={t('common.edit')}
           className={buttonClasses({ variant: 'ghost', size: 'sm' })}
         >
           <EditIcon className="size-4" />
@@ -88,8 +90,8 @@ export default function ListCard({ list, tags, index, onEdit, onEditTags, onDele
         <button
           type="button"
           onClick={handleDelete}
-          aria-label={`Eliminar la lista ${list.name}`}
-          title="Eliminar"
+          aria-label={t('lists.card.delete', { name: list.name })}
+          title={t('common.delete')}
           className={buttonClasses({ variant: 'ghost', size: 'sm', className: 'hover:text-danger' })}
         >
           <TrashIcon className="size-4" />

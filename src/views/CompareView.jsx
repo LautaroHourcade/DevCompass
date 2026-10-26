@@ -10,6 +10,7 @@ import PageLoader from '../components/ui/PageLoader'
 import { CompareIcon, SearchIcon } from '../components/ui/Icons'
 import { buttonClasses } from '../components/ui/buttonStyles'
 import { useComparisonStats } from '../hooks/useComparisonStats'
+import { useTranslation } from '../hooks/useTranslation'
 
 const MIN_SELECTED = 2
 const MAX_SELECTED = 3
@@ -28,6 +29,7 @@ function parseSelectedIds(searchParams) {
 
 /** Comparar de dos a tres repositorios de la colección: estadísticas actuales y evolución de las stars. */
 export default function CompareView({ savedRepos, isLoading, savedLoadError, onReloadSaved, onOpenDetail }) {
+  const { t } = useTranslation()
   const [searchParams, setSearchParams] = useSearchParams()
 
   // Solo cuentan los ids que siguen en la colección (un repo quitado de guardados sale de la comparación).
@@ -59,8 +61,8 @@ export default function CompareView({ savedRepos, isLoading, savedLoadError, onR
       return (
         <FormAlert type="info">
           {selectedRepos.length === 0
-            ? 'Elige dos o tres repositorios de tu colección para compararlos.'
-            : 'Elige al menos un repositorio más para empezar la comparación.'}
+            ? t('compare.pickTwoOrThree')
+            : t('compare.pickOneMore')}
         </FormAlert>
       )
     }
@@ -85,18 +87,18 @@ export default function CompareView({ savedRepos, isLoading, savedLoadError, onR
 
   function renderContent() {
     if (savedLoadError) return <ErrorMessage error={savedLoadError} onRetry={onReloadSaved} />
-    if (isLoading && savedRepos.length === 0) return <PageLoader label="Cargando tu colección…" />
+    if (isLoading && savedRepos.length === 0) return <PageLoader label={t('saved.loading')} />
 
     if (savedRepos.length < MIN_SELECTED) {
       return (
         <EmptyState
           icon={<CompareIcon className="size-6" />}
-          title="Necesitas al menos dos repositorios"
-          message="Para comparar, guarda primero dos o más repositorios en tu colección."
+          title={t('compare.empty.title')}
+          message={t('compare.empty.message')}
           action={
             <Link to="/" className={buttonClasses({ variant: 'primary' })}>
               <SearchIcon className="size-4" />
-              Explorar repositorios
+              {t('saved.empty.action')}
             </Link>
           }
         />
@@ -119,10 +121,10 @@ export default function CompareView({ savedRepos, isLoading, savedLoadError, onR
   return (
     <section aria-labelledby="compare-title" className="flex flex-col gap-6">
       <PageHeader
-        eyebrow="Comparación"
-        title="Comparar repositorios"
+        eyebrow={t('compare.eyebrow')}
+        title={t('compare.title')}
         titleId="compare-title"
-        description="Pon lado a lado hasta tres repositorios de tu colección. Quitarlos de aquí no los borra de tus guardados."
+        description={t('compare.description')}
       />
 
       {renderContent()}

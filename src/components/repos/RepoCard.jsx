@@ -1,7 +1,8 @@
 import SaveButton from './SaveButton'
 import LanguageTag from './LanguageTag'
 import { ForkIcon, GitHubIcon, IssueIcon, StarIcon } from '../ui/Icons'
-import { formatDateTime, formatFullNumber, formatNumber, formatRelativeDate } from '../../utils/formatters'
+import { formatDateTime, formatFullNumber, formatLicense, formatNumber, formatRelativeDate } from '../../utils/formatters'
+import { useTranslation } from '../../hooks/useTranslation'
 
 const STAGGER_DELAY_MS = 40
 const MAX_STAGGERED_CARDS = 8
@@ -13,6 +14,8 @@ const MAX_STAGGERED_CARDS = 8
  * renderActions (opcional): botones extra para el pie de la tarjeta (p. ej. "Añadir a lista").
  */
 export default function RepoCard({ repo, index, isSaved, onToggleSave, onOpenDetail, renderTracking, renderActions }) {
+  const { t } = useTranslation()
+
   function handleOpenDetail(event) {
     event.preventDefault()
     onOpenDetail(repo)
@@ -24,7 +27,7 @@ export default function RepoCard({ repo, index, isSaved, onToggleSave, onOpenDet
   const readouts = [
     { label: 'Stars', value: repo.stars, Icon: StarIcon, iconClass: 'text-star' },
     { label: 'Forks', value: repo.forks, Icon: ForkIcon, iconClass: 'text-purple' },
-    { label: 'Issues', value: repo.openIssues, Icon: IssueIcon, iconClass: 'text-info' },
+    { label: t('repo.issues'), value: repo.openIssues, Icon: IssueIcon, iconClass: 'text-info' },
   ]
 
   return (
@@ -43,7 +46,7 @@ export default function RepoCard({ repo, index, isSaved, onToggleSave, onOpenDet
         />
         <div className="min-w-0 flex-1">
           <p className="truncate text-xs text-muted">
-            <span className="sr-only">Autor: </span>
+            <span className="sr-only">{t('repo.author')} </span>
             {repo.owner.login}
           </p>
           <h3 className="truncate text-base leading-snug font-semibold tracking-[-0.01em]">
@@ -53,7 +56,7 @@ export default function RepoCard({ repo, index, isSaved, onToggleSave, onOpenDet
               className="max-w-full cursor-pointer truncate text-left transition-colors duration-150 group-hover:text-accent focus-visible:outline-none after:absolute after:inset-0 after:rounded-xl after:content-[''] focus-visible:after:outline-2 focus-visible:after:outline-offset-2 focus-visible:after:outline-accent"
             >
               {repo.name}
-              <span className="sr-only"> (ver detalle)</span>
+              <span className="sr-only"> {t('repo.viewDetail')}</span>
             </button>
           </h3>
         </div>
@@ -62,11 +65,11 @@ export default function RepoCard({ repo, index, isSaved, onToggleSave, onOpenDet
             href={repo.url}
             target="_blank"
             rel="noopener noreferrer"
-            title="Abrir en GitHub"
+            title={t('repo.openOnGitHub')}
             className="flex size-9 items-center justify-center rounded-lg text-subtle transition-[background-color,color,scale] duration-150 hover:bg-surface-2 hover:text-fg active:scale-[0.97]"
           >
             <GitHubIcon className="size-4" />
-            <span className="sr-only">Abrir {repo.name} en GitHub (se abre en una pestaña nueva)</span>
+            <span className="sr-only">{t('repo.openRepoOnGitHub', { name: repo.name })}</span>
           </a>
           <SaveButton repo={repo} isSaved={isSaved} onToggleSave={onToggleSave} compact />
         </div>
@@ -74,7 +77,7 @@ export default function RepoCard({ repo, index, isSaved, onToggleSave, onOpenDet
 
       {/* El contenedor crece para alinear las tarjetas; el párrafo solo recorta (si crece él, asoma una 3.ª línea) */}
       <div className="mt-3 flex-1">
-        <p className="line-clamp-2 text-sm text-muted">{repo.description || 'Este repositorio no tiene descripción.'}</p>
+        <p className="line-clamp-2 text-sm text-muted">{repo.description || t('repo.noDescription')}</p>
       </div>
 
       <dl className="mt-5 grid grid-cols-3 border-t border-line pt-4">
@@ -93,9 +96,9 @@ export default function RepoCard({ repo, index, isSaved, onToggleSave, onOpenDet
 
       <p className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
         {repo.language && <LanguageTag language={repo.language} />}
-        <span>{repo.license ?? 'Sin licencia'}</span>
+        <span>{formatLicense(repo.license)}</span>
         <span className="ml-auto">
-          <span className="sr-only">Actualizado </span>
+          <span className="sr-only">{t('repo.updated')} </span>
           <time dateTime={repo.updatedAt} title={formatDateTime(repo.updatedAt)}>
             {formatRelativeDate(repo.updatedAt)}
           </time>

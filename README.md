@@ -12,6 +12,26 @@ npm run dev
 
 Abre http://localhost:5173
 
+## Despliegue (Vercel)
+
+1. En Vercel, **Add New → Project** e importa el repositorio. `vercel.json` ya indica el framework
+   (Vite), el comando de build y la carpeta `dist`.
+2. En **Settings → Environment Variables** añade `VITE_SUPABASE_URL` y
+   `VITE_SUPABASE_PUBLISHABLE_KEY` (los mismos valores que en `.env`) y vuelve a desplegar.
+3. En Supabase, **Authentication → URL Configuration**:
+   - *Site URL*: la URL de producción, por ejemplo `https://devcompass.vercel.app`.
+   - *Redirect URLs*: añade `https://devcompass.vercel.app/**` (y `http://localhost:5173/**` para
+     seguir desarrollando en local). Sin esto, los enlaces de los emails de confirmación apuntan a `localhost`.
+4. En Supabase, **Authentication → Sign In / Providers → Email**: longitud mínima `8` y
+   *Password requirements* `Letters and digits`, igual que la validación del cliente
+   (`src/utils/validation.js`).
+
+`vercel.json` también redirige todas las rutas a `index.html` (la app usa `BrowserRouter`; sin esto,
+recargar `/panel` daría 404), cachea `assets/` de forma permanente (los nombres llevan hash) y añade
+cabeceras de seguridad básicas.
+
+Las Edge Functions y el cron siguen en Supabase: Vercel solo sirve el frontend estático.
+
 ## Token de GitHub
 
 El navegador nunca habla directamente con `api.github.com`: llama a la Edge Function
@@ -114,6 +134,24 @@ mono tabular. Los tokens de color, las curvas de movimiento (`--ease-out`, `--ea
   desplazamientos y giros y se mantienen los fundidos.
 - Atajo: `/` enfoca el buscador de Explorar.
 
+## Idiomas
+
+La interfaz está en **español e inglés**; el botón `ES` / `EN` de la cabecera (y del menú móvil) cambia
+de idioma al momento y la elección se recuerda en el navegador. La primera vez se usa el idioma del
+navegador (español si empieza por `es`, inglés en cualquier otro caso). Solo se traduce el texto de la
+interfaz: los datos de GitHub (descripciones, temas) se muestran tal cual.
+
+- Los textos viven en `src/i18n/translations/es.js` y `en.js`, agrupados por pantalla.
+- En un componente: `const { t } = useTranslation()` y `t('saved.title')`. Variables con `{nombre}`
+  (`t('profile.greeting', { name })`) y plurales con `clave_one` / `clave_other` (`t('saved.count', { count })`).
+- Fuera de React (services): `translate(clave)` o `throw new TranslatableError(clave)`, que traduce el
+  mensaje cada vez que se lee.
+- Fechas y números (`src/utils/formatters.js`) usan el formato del idioma activo.
+- `src/i18n/translations.test.js` comprueba que ambos idiomas tienen las mismas claves y variables.
+
+Los emails de Supabase Auth (confirmación de cuenta, código de cambio de contraseña) usan las plantillas
+del panel de Supabase (**Authentication → Email Templates**) y no cambian con el idioma de la interfaz.
+
 ## Calidad
 
 ```bash
@@ -137,8 +175,9 @@ todo ocurre en una transacción que se deshace al final.
   token de GitHub del proyecto (5.000 peticiones/hora). Si fuera un problema, habría que exigir sesión o
   añadir un límite por IP.
 - **Protección de contraseñas filtradas:** Supabase solo la ofrece en los planes de pago
-  (*Leaked password protection*), así que en el plan gratuito queda desactivada. La app exige al menos
-  8 caracteres (`src/utils/validation.js`); al pasar a un plan de pago conviene activarla.
+  (*Leaked password protection*), así que en el plan gratuito queda desactivada. Como alternativa, la app
+  y Supabase exigen al menos 8 caracteres con letras y números (`src/utils/validation.js`); al pasar a
+  un plan de pago conviene activarla.
 - **Tests de extremo a extremo:** los flujos completos (entrar, buscar, guardar...) se revisan a mano en el
   navegador; no hay tests automáticos con un navegador real (p. ej. Playwright).
 - **Edge Functions:** el código Deno de `supabase/functions` no pasa por ESLint ni por Vitest.

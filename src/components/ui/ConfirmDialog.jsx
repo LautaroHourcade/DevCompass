@@ -5,21 +5,24 @@ import FormAlert from './FormAlert'
 import { AlertIcon } from './Icons'
 import { buttonClasses } from './buttonStyles'
 import { useFormSubmit } from '../../hooks/useFormSubmit'
+import { useTranslation } from '../../hooks/useTranslation'
 
 /**
  * Confirmación de una acción destructiva con el estilo de la web (sustituye a window.confirm).
  * - onConfirm puede ser asíncrona: mientras se ejecuta, los botones quedan deshabilitados.
+ * - confirmLabel: texto del botón (por defecto "Eliminar").
  * - confirmText: si se indica, hay que escribirlo exactamente para poder confirmar.
  */
 export default function ConfirmDialog({
   isOpen,
   title,
   message,
-  confirmLabel = 'Eliminar',
+  confirmLabel,
   confirmText = '',
   onConfirm,
   onClose,
 }) {
+  const { t } = useTranslation()
   const titleId = useId()
   const inputId = useId()
   const [typedText, setTypedText] = useState('')
@@ -68,7 +71,7 @@ export default function ConfirmDialog({
         {confirmText && (
           <TextField
             id={inputId}
-            label={`Escribe "${confirmText}" para confirmar`}
+            label={t('confirm.typeToConfirm', { text: confirmText })}
             value={typedText}
             onChange={setTypedText}
             autoComplete="off"
@@ -79,14 +82,14 @@ export default function ConfirmDialog({
 
         <footer className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <button type="button" onClick={handleCancel} disabled={isSubmitting} className={buttonClasses()}>
-            Cancelar
+            {t('common.cancel')}
           </button>
           <button
             type="submit"
             disabled={!canConfirm || isSubmitting}
             className={buttonClasses({ variant: 'danger' })}
           >
-            {isSubmitting ? 'Procesando…' : confirmLabel}
+            {isSubmitting ? t('common.processing') : (confirmLabel ?? t('common.delete'))}
           </button>
         </footer>
       </form>

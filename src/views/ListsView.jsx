@@ -11,6 +11,7 @@ import PageLoader from '../components/ui/PageLoader'
 import { FilterIcon, ListIcon, PlusIcon, ResetIcon } from '../components/ui/Icons'
 import { buttonClasses } from '../components/ui/buttonStyles'
 import { useToast } from '../hooks/useToast'
+import { useTranslation } from '../hooks/useTranslation'
 
 /**
  * listsState: lo que devuelve useLists (listas y acciones).
@@ -19,6 +20,7 @@ import { useToast } from '../hooks/useToast'
 export default function ListsView({ listsState, tagsState }) {
   const { lists, isLoading, loadError, reload, createList, updateList, deleteList, addTagToList, removeTagFromList } = listsState
   const { showToast } = useToast()
+  const { t } = useTranslation()
   // null: cerrado. { list: null }: crear. { list }: editar.
   const [formState, setFormState] = useState(null)
   const [listToDelete, setListToDelete] = useState(null)
@@ -51,22 +53,22 @@ export default function ListsView({ listsState, tagsState }) {
   async function handleSubmitForm(values) {
     if (formState.list) {
       await updateList(formState.list.id, values)
-      showToast('Lista actualizada', 'success')
+      showToast(t('lists.toast.updated'), 'success')
     } else {
       await createList(values)
-      showToast(`Lista "${values.name}" creada`, 'success')
+      showToast(t('lists.toast.created', { name: values.name }), 'success')
     }
   }
 
   async function handleConfirmDelete() {
     await deleteList(listToDelete.id)
-    showToast(`Lista "${listToDelete.name}" eliminada`, 'info')
+    showToast(t('lists.toast.deleted', { name: listToDelete.name }), 'info')
   }
 
   const createButton = (
     <button type="button" onClick={handleOpenCreate} className={buttonClasses({ variant: 'primary' })}>
       <PlusIcon className="size-4" />
-      Nueva lista
+      {t('lists.new')}
     </button>
   )
 
@@ -75,11 +77,11 @@ export default function ListsView({ listsState, tagsState }) {
       return (
         <EmptyState
           icon={<FilterIcon className="size-6" />}
-          title="Ninguna lista tiene esta etiqueta"
-          message="Asigna etiquetas a tus listas con el botón de etiqueta de cada tarjeta, o restablece el filtro."
+          title={t('lists.noMatch.title')}
+          message={t('lists.noMatch.message')}
           action={
             <button type="button" onClick={handleResetFilter} className={buttonClasses({ variant: 'primary' })}>
-              Restablecer filtro
+              {t('lists.resetFilter')}
             </button>
           }
         />
@@ -107,10 +109,10 @@ export default function ListsView({ listsState, tagsState }) {
   return (
     <section aria-labelledby="lists-title" className="flex flex-col gap-6">
       <PageHeader
-        eyebrow="Colecciones temáticas"
-        title="Tus listas"
+        eyebrow={t('lists.eyebrow')}
+        title={t('lists.title')}
         titleId="lists-title"
-        description="Agrupa tus repositorios guardados por tema, proyecto o lo que necesites."
+        description={t('lists.description')}
       >
         {lists.length > 0 && createButton}
       </PageHeader>
@@ -118,12 +120,12 @@ export default function ListsView({ listsState, tagsState }) {
       {loadError ? (
         <ErrorMessage error={loadError} onRetry={reload} />
       ) : isLoading && lists.length === 0 ? (
-        <PageLoader label="Cargando tus listas…" />
+        <PageLoader label={t('lists.loading')} />
       ) : lists.length === 0 ? (
         <EmptyState
           icon={<ListIcon className="size-6" />}
-          title="Todavía no tienes listas"
-          message="Crea una lista y añade repositorios desde tu colección de guardados."
+          title={t('lists.empty.title')}
+          message={t('lists.empty.message')}
           action={createButton}
         />
       ) : (
@@ -131,21 +133,21 @@ export default function ListsView({ listsState, tagsState }) {
           {tagsState.tags.length > 0 && (
             <form
               onSubmit={handleFilterSubmit}
-              aria-label="Filtrar listas por etiqueta"
+              aria-label={t('lists.filterLabel')}
               className="flex flex-col gap-3 rounded-xl border border-line bg-surface p-4 animate-fade-up min-[480px]:flex-row min-[480px]:items-end"
             >
               <div className="min-[480px]:w-[28rem]">
                 <SelectField
                   id="lists-filter-tag"
-                  label="Etiqueta"
+                  label={t('saved.filters.tag')}
                   value={activeTagFilter}
                   options={tagOptions}
-                  placeholder="Todas las etiquetas"
+                  placeholder={t('lists.allTags')}
                   onChange={setTagFilter}
                 />
               </div>
               <p className="font-mono text-xs text-muted min-[480px]:mb-3 min-[480px]:ml-auto" aria-live="polite">
-                {filteredLists.length} de {lists.length}
+                {t('lists.filterCount', { shown: filteredLists.length, total: lists.length })}
               </p>
               <button
                 type="button"
@@ -154,7 +156,7 @@ export default function ListsView({ listsState, tagsState }) {
                 className={buttonClasses({ variant: 'ghost', size: 'sm', className: 'min-[480px]:mb-1' })}
               >
                 <ResetIcon className="size-3.5" />
-                Restablecer filtro
+                {t('lists.resetFilter')}
               </button>
             </form>
           )}
@@ -187,9 +189,9 @@ export default function ListsView({ listsState, tagsState }) {
       {listToDelete && (
         <ConfirmDialog
           isOpen
-          title={`¿Eliminar la lista "${listToDelete.name}"?`}
-          message="Los repositorios seguirán en tus guardados; solo se borra la lista."
-          confirmLabel="Eliminar lista"
+          title={t('lists.delete.title', { name: listToDelete.name })}
+          message={t('lists.delete.message')}
+          confirmLabel={t('lists.delete.confirm')}
           onConfirm={handleConfirmDelete}
           onClose={() => setListToDelete(null)}
         />

@@ -1,7 +1,10 @@
 import { CloseIcon } from '../ui/Icons'
+import { useTranslation } from '../../hooks/useTranslation'
 
 /** Etiqueta del usuario. Con onRemove muestra una "x" para quitarla del repositorio. */
 export default function TagChip({ name, onRemove, isRemoving = false }) {
+  const { t } = useTranslation()
+
   function handleRemove(event) {
     event.preventDefault()
     onRemove()
@@ -20,8 +23,8 @@ export default function TagChip({ name, onRemove, isRemoving = false }) {
           type="button"
           onClick={handleRemove}
           disabled={isRemoving}
-          aria-label={`Quitar la etiqueta ${name}`}
-          title="Quitar etiqueta"
+          aria-label={t('tags.removeTag', { name })}
+          title={t('tags.remove')}
           className="flex size-6 cursor-pointer items-center justify-center rounded text-muted transition-[background-color,color] duration-150 hover:bg-line-strong hover:text-fg disabled:cursor-wait"
         >
           <CloseIcon className="size-3" strokeWidth={2.5} />

@@ -3,6 +3,7 @@ import ChartAxes from './ChartAxes'
 import { CHART_HEIGHT, CHART_MARGIN, buildLinePath, createChartScale } from './chartScale'
 import { useElementWidth } from '../../hooks/useElementWidth'
 import { formatDate, formatFullNumber } from '../../utils/formatters'
+import { useTranslation } from '../../hooks/useTranslation'
 
 /**
  * Gráfico de líneas de una sola serie a lo largo del tiempo (SVG propio, sin librerías).
@@ -12,6 +13,7 @@ import { formatDate, formatFullNumber } from '../../utils/formatters'
  * Debajo, una tabla con todos los datos para quien no pueda ver el gráfico.
  */
 export default function LineChart({ title, label, points, colorClass }) {
+  const { t } = useTranslation()
   const [containerRef, width] = useElementWidth()
   const [activeIndex, setActiveIndex] = useState(null)
   const descriptionId = useId()
@@ -24,15 +26,19 @@ export default function LineChart({ title, label, points, colorClass }) {
       <figcaption className="flex items-baseline justify-between gap-3">
         <span className="font-mono text-2xs tracking-[0.14em] text-muted uppercase">{title}</span>
         <span className="font-mono text-lg font-medium tabular-nums">
-          <span className="sr-only">Último valor: </span>
+          <span className="sr-only">{t('chart.lastValue')} </span>
           {formatFullNumber(last.value)}
         </span>
       </figcaption>
 
       <p id={descriptionId} className="sr-only">
-        {`${label}: de ${formatFullNumber(first.value)} el ${formatDate(first.date)} a ${formatFullNumber(
-          last.value,
-        )} el ${formatDate(last.date)}. Usa las flechas para recorrer las capturas.`}
+        {t('chart.description', {
+          label,
+          from: formatFullNumber(first.value),
+          fromDate: formatDate(first.date),
+          to: formatFullNumber(last.value),
+          toDate: formatDate(last.date),
+        })}
       </p>
 
       <div ref={containerRef} className={`relative ${colorClass}`}>
@@ -49,13 +55,13 @@ export default function LineChart({ title, label, points, colorClass }) {
       </div>
 
       <details className="text-xs text-muted">
-        <summary className="w-fit cursor-pointer rounded hover:text-fg">Ver los datos</summary>
+        <summary className="w-fit cursor-pointer rounded hover:text-fg">{t('chart.showData')}</summary>
         <div className="mt-2 max-h-[20rem] overflow-y-auto">
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-line">
                 <th scope="col" className="py-1 font-medium">
-                  Fecha
+                  {t('chart.date')}
                 </th>
                 <th scope="col" className="py-1 text-right font-medium">
                   {label}
@@ -78,6 +84,7 @@ export default function LineChart({ title, label, points, colorClass }) {
 }
 
 function ChartSvg({ width, points, label, descriptionId, activeIndex, onActiveChange }) {
+  const { t } = useTranslation()
   const scale = createChartScale(points, width)
   const xOf = (index) => scale.xOfDate(points[index].date)
   const { yOf, baselineY } = scale
@@ -118,7 +125,7 @@ function ChartSvg({ width, points, label, descriptionId, activeIndex, onActiveCh
         width={width}
         height={CHART_HEIGHT}
         role="group"
-        aria-label={`Gráfico de ${label.toLowerCase()}`}
+        aria-label={t('chart.ariaLabel', { label })}
         aria-describedby={descriptionId}
         tabIndex={0}
         onKeyDown={handleKeyDown}

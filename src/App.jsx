@@ -13,6 +13,7 @@ import { useLists } from './hooks/useLists'
 import { useTags } from './hooks/useTags'
 import { useToast } from './hooks/useToast'
 import { signOut } from './services/authService'
+import { useTranslation } from './hooks/useTranslation'
 
 // Explorar se carga siempre; el resto de pantallas se descargan solo cuando se visitan.
 const SavedView = lazy(() => import('./views/SavedView'))
@@ -43,6 +44,7 @@ export default function App() {
   const tagsState = useTags(user?.id)
   const { refresh: refreshLists } = listsState
   const { showToast } = useToast()
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
   const [selectedRepo, setSelectedRepo] = useState(null)
@@ -56,15 +58,15 @@ export default function App() {
 
   // Recarga las listas tras un cambio que las afecta en la base de datos (cascade).
   const refreshListsSafely = useCallback(() => {
-    refreshLists().catch(() => showToast('No se pudieron actualizar tus listas', 'error'))
-  }, [refreshLists, showToast])
+    refreshLists().catch(() => showToast(t('errors.lists.refresh'), 'error'))
+  }, [refreshLists, showToast, t])
 
   const handleToggleSave = useCallback(
     async (repo) => {
       // Sin sesión no se puede guardar: invitamos a entrar y volvemos aquí después.
       if (!user) {
         setSelectedRepo(null)
-        showToast('Inicia sesión para guardar repositorios', 'info')
+        showToast(t('saved.signInToSave'), 'info')
         navigate('/entrar', { state: { from: location.pathname } })
         return
       }
@@ -72,28 +74,28 @@ export default function App() {
       try {
         const isNowSaved = await toggleSave(repo)
         if (isNowSaved) {
-          showToast(`"${repo.name}" añadido a guardados`, 'success')
+          showToast(t('saved.added', { name: repo.name }), 'success')
         } else {
           // Al quitarlo de guardados también sale de sus listas (cascade en la base de datos).
           refreshListsSafely()
-          showToast(`"${repo.name}" eliminado de guardados`, 'info')
+          showToast(t('saved.removed', { name: repo.name }), 'info')
         }
       } catch (error) {
         showToast(error.message, 'error')
       }
     },
-    [user, toggleSave, refreshListsSafely, showToast, navigate, location.pathname],
+    [user, toggleSave, refreshListsSafely, showToast, navigate, location.pathname, t],
   )
 
   const handleSignOut = useCallback(async () => {
     try {
       await signOut()
       navigate('/')
-      showToast('Has cerrado sesión', 'info')
+      showToast(t('header.signedOut'), 'info')
     } catch (error) {
       showToast(error.message, 'error')
     }
-  }, [navigate, showToast])
+  }, [navigate, showToast, t])
 
   const handleCloseDetail = useCallback(() => setSelectedRepo(null), [])
 
@@ -132,7 +134,7 @@ export default function App() {
         href="#main"
         className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-lg focus:bg-accent focus:px-4 focus:py-2 focus:text-on-accent"
       >
-        Saltar al contenido
+        {t('common.skipToContent')}
       </a>
 
       <Header
@@ -149,7 +151,7 @@ export default function App() {
           <ExploreView isSaved={isSaved} onToggleSave={handleToggleSave} onOpenDetail={setSelectedRepo} />
         </div>
 
-        <Suspense fallback={<PageLoader label="Cargando…" />}>
+        <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/" element={null} />
 

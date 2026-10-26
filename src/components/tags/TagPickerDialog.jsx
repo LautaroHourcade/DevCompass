@@ -6,6 +6,7 @@ import { CheckIcon, PlusIcon, TagIcon } from '../ui/Icons'
 import { buttonClasses } from '../ui/buttonStyles'
 import { CONTROL_CLASSES, LABEL_CLASSES } from '../ui/formStyles'
 import { MAX_TAG_NAME_LENGTH, normalizeTagName } from '../../services/tagsService'
+import { useTranslation } from '../../hooks/useTranslation'
 
 /**
  * Marca o desmarca las etiquetas de un elemento (repositorio guardado o lista).
@@ -15,6 +16,7 @@ import { MAX_TAG_NAME_LENGTH, normalizeTagName } from '../../services/tagsServic
  * - onAdd(tagId) / onRemove(tagId) / onCreate(name): asíncronas; si fallan, el error se muestra aquí.
  */
 export default function TagPickerDialog({ subtitle, selectedTagIds, tags, onAdd, onRemove, onCreate, onClose }) {
+  const { t } = useTranslation()
   const [pendingTagId, setPendingTagId] = useState(null)
   const [newTagName, setNewTagName] = useState('')
   const [isCreating, setIsCreating] = useState(false)
@@ -42,7 +44,7 @@ export default function TagPickerDialog({ subtitle, selectedTagIds, tags, onAdd,
 
     const name = normalizeTagName(newTagName)
     if (!name) {
-      setError('Escribe un nombre para la etiqueta.')
+      setError(t('tags.form.nameRequired'))
       return
     }
 
@@ -72,7 +74,7 @@ export default function TagPickerDialog({ subtitle, selectedTagIds, tags, onAdd,
       <div className="flex flex-col gap-5">
         <header className="flex flex-col gap-1">
           <h2 id="tag-picker-title" className="text-xl font-semibold">
-            Etiquetas
+            {t('nav.tags')}
           </h2>
           <p className="font-mono text-sm text-muted">{subtitle}</p>
         </header>
@@ -80,10 +82,10 @@ export default function TagPickerDialog({ subtitle, selectedTagIds, tags, onAdd,
         {error && <FormAlert type="error">{error}</FormAlert>}
 
         {tags.length === 0 ? (
-          <FormAlert type="info">Todavía no tienes etiquetas. Crea la primera aquí abajo.</FormAlert>
+          <FormAlert type="info">{t('tags.picker.noTags')}</FormAlert>
         ) : (
           <fieldset className="flex max-h-[32rem] flex-col gap-2 overflow-y-auto">
-            <legend className="sr-only">Tus etiquetas</legend>
+            <legend className="sr-only">{t('tags.title')}</legend>
             {tags.map((tag) => {
               const hasTag = selectedTagIds.includes(tag.id)
               const isPending = pendingTagId === tag.id
@@ -120,7 +122,7 @@ export default function TagPickerDialog({ subtitle, selectedTagIds, tags, onAdd,
 
         <form onSubmit={handleCreate} noValidate className="flex flex-col gap-1.5 border-t border-line pt-5">
           <label htmlFor="new-tag-name" className={LABEL_CLASSES}>
-            Nueva etiqueta
+            {t('tags.new')}
           </label>
           <div className="flex gap-2">
             <input
@@ -128,24 +130,24 @@ export default function TagPickerDialog({ subtitle, selectedTagIds, tags, onAdd,
               value={newTagName}
               onChange={(event) => setNewTagName(event.target.value)}
               maxLength={MAX_TAG_NAME_LENGTH}
-              placeholder="Ej: React, Testing, DevOps"
+              placeholder={t('tags.picker.placeholder')}
               autoComplete="off"
               disabled={isCreating}
               className={`${CONTROL_CLASSES} font-mono placeholder:font-sans`}
             />
             <button type="submit" disabled={isCreating} className={buttonClasses({ variant: 'primary' })}>
               <PlusIcon className="size-4" />
-              <span className="sr-only sm:not-sr-only">{isCreating ? 'Creando…' : 'Crear'}</span>
+              <span className="sr-only sm:not-sr-only">{isCreating ? t('tags.picker.creating') : t('tags.picker.create')}</span>
             </button>
           </div>
         </form>
 
         <footer className="flex items-center justify-between gap-2">
           <Link to="/etiquetas" onClick={onClose} className="text-sm font-medium text-accent hover:underline">
-            Gestionar etiquetas
+            {t('tags.picker.manage')}
           </Link>
           <button type="button" onClick={handleClose} className={buttonClasses()}>
-            Hecho
+            {t('lists.addDialog.done')}
           </button>
         </footer>
       </div>

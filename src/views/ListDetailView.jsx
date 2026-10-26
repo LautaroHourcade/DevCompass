@@ -11,6 +11,7 @@ import PageLoader from '../components/ui/PageLoader'
 import { ArrowLeftIcon, BookmarkIcon, CloseIcon, EditIcon, ListIcon, TagIcon } from '../components/ui/Icons'
 import { buttonClasses } from '../components/ui/buttonStyles'
 import { useToast } from '../hooks/useToast'
+import { useTranslation } from '../hooks/useTranslation'
 
 export default function ListDetailView({
   listsState,
@@ -26,6 +27,7 @@ export default function ListDetailView({
   const { listId } = useParams()
   const { lists, isLoading, loadError, reload, updateList, removeRepoFromList, addTagToList, removeTagFromList } = listsState
   const { showToast } = useToast()
+  const { t } = useTranslation()
   const [isEditing, setIsEditing] = useState(false)
   const [isEditingTags, setIsEditingTags] = useState(false)
 
@@ -35,17 +37,17 @@ export default function ListDetailView({
   if (loadError) return <ErrorMessage error={loadError} onRetry={reload} />
   if (savedLoadError) return <ErrorMessage error={savedLoadError} onRetry={onReloadSaved} />
 
-  if ((isLoading || isLoadingSaved) && !list) return <PageLoader label="Cargando la lista…" />
+  if ((isLoading || isLoadingSaved) && !list) return <PageLoader label={t('lists.detail.loading')} />
 
   if (!list) {
     return (
       <EmptyState
         icon={<ListIcon className="size-6" />}
-        title="No encontramos esta lista"
-        message="Puede que se haya eliminado o que el enlace no sea correcto."
+        title={t('lists.detail.notFound.title')}
+        message={t('lists.detail.notFound.message')}
         action={
           <Link to="/listas" className={buttonClasses({ variant: 'primary' })}>
-            Ver mis listas
+            {t('lists.detail.notFound.action')}
           </Link>
         }
       />
@@ -59,7 +61,7 @@ export default function ListDetailView({
   async function handleRemoveFromList(repo) {
     try {
       await removeRepoFromList(list.id, repo.savedId)
-      showToast(`"${repo.name}" quitado de la lista`, 'info')
+      showToast(t('lists.toast.repoRemoved', { name: repo.name }), 'info')
     } catch (error) {
       showToast(error.message, 'error')
     }
@@ -67,7 +69,7 @@ export default function ListDetailView({
 
   async function handleSubmitEdit(values) {
     await updateList(list.id, values)
-    showToast('Lista actualizada', 'success')
+    showToast(t('lists.toast.updated'), 'success')
   }
 
   function handleOpenEdit(event) {
@@ -93,7 +95,7 @@ export default function ListDetailView({
         className={buttonClasses({ variant: 'ghost', size: 'sm', className: 'flex-1 hover:text-danger' })}
       >
         <CloseIcon className="size-3.5" />
-        Quitar de la lista
+        {t('lists.detail.removeRepo')}
       </button>
     )
   }
@@ -105,29 +107,29 @@ export default function ListDetailView({
         className={buttonClasses({ variant: 'ghost', size: 'sm', className: 'self-start animate-fade-in' })}
       >
         <ArrowLeftIcon className="size-4" />
-        Mis listas
+        {t('lists.detail.back')}
       </Link>
 
       <PageHeader
-        eyebrow="Lista"
+        eyebrow={t('lists.detail.eyebrow')}
         title={list.name}
         titleId="list-detail-title"
-        description={list.description || `${listRepos.length} repositorios en esta lista.`}
+        description={list.description || t('lists.detail.count', { count: listRepos.length })}
       >
         <div className="flex gap-2">
           <button type="button" onClick={handleOpenTags} className={buttonClasses()}>
             <TagIcon className="size-4" />
-            Etiquetas
+            {t('nav.tags')}
           </button>
           <button type="button" onClick={handleOpenEdit} className={buttonClasses()}>
             <EditIcon className="size-4" />
-            Editar
+            {t('common.edit')}
           </button>
         </div>
       </PageHeader>
 
       {listTags.length > 0 && (
-        <ul aria-label="Etiquetas de la lista" className="-mt-2 flex flex-wrap gap-1.5">
+        <ul aria-label={t('lists.tagsLabel')} className="-mt-2 flex flex-wrap gap-1.5">
           {listTags.map((tag) => (
             <li key={tag.id}>
               <TagChip name={tag.name} />
@@ -139,11 +141,11 @@ export default function ListDetailView({
       {listRepos.length === 0 ? (
         <EmptyState
           icon={<BookmarkIcon className="size-6" />}
-          title="Esta lista está vacía"
-          message="Ve a tus guardados y usa «Añadir a lista» en cualquier repositorio."
+          title={t('lists.detail.empty.title')}
+          message={t('lists.detail.empty.message')}
           action={
             <Link to="/guardados" className={buttonClasses({ variant: 'primary' })}>
-              Ir a guardados
+              {t('lists.detail.empty.action')}
             </Link>
           }
         />

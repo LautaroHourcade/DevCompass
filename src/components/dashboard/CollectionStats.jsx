@@ -1,11 +1,13 @@
 import { CodeIcon, ForkIcon, NoteIcon, StarIcon, TagIcon } from '../ui/Icons'
 import { formatFullNumber, formatNumber } from '../../utils/formatters'
+import { useTranslation } from '../../hooks/useTranslation'
 
 /**
  * Estadísticas agregadas de la colección. totals: resultado de getCollectionTotals.
  * onOpenDetail: abre el detalle del repositorio con más stars.
  */
 export default function CollectionStats({ totals, onOpenDetail }) {
+  const { t } = useTranslation()
   const { mostStarred } = totals
 
   function handleOpenMostStarred(event) {
@@ -14,12 +16,12 @@ export default function CollectionStats({ totals, onOpenDetail }) {
   }
 
   const stats = [
-    { label: 'Stars en total', value: formatNumber(totals.totalStars), title: formatFullNumber(totals.totalStars), Icon: StarIcon, iconClass: 'text-star' },
-    { label: 'Media de stars', value: formatNumber(totals.averageStars), title: formatFullNumber(totals.averageStars), Icon: StarIcon, iconClass: 'text-star' },
-    { label: 'Forks en total', value: formatNumber(totals.totalForks), title: formatFullNumber(totals.totalForks), Icon: ForkIcon, iconClass: 'text-purple' },
-    { label: 'Con notas', value: formatFullNumber(totals.withNotes), Icon: NoteIcon, iconClass: 'text-info' },
-    { label: 'Etiquetas en uso', value: formatFullNumber(totals.usedTags), Icon: TagIcon, iconClass: 'text-accent' },
-    { label: 'Lenguajes', value: formatFullNumber(totals.languageCount), Icon: CodeIcon, iconClass: 'text-muted' },
+    { label: t('dashboard.totalStars'), value: formatNumber(totals.totalStars), title: formatFullNumber(totals.totalStars), Icon: StarIcon, iconClass: 'text-star' },
+    { label: t('dashboard.averageStars'), value: formatNumber(totals.averageStars), title: formatFullNumber(totals.averageStars), Icon: StarIcon, iconClass: 'text-star' },
+    { label: t('dashboard.totalForks'), value: formatNumber(totals.totalForks), title: formatFullNumber(totals.totalForks), Icon: ForkIcon, iconClass: 'text-purple' },
+    { label: t('dashboard.withNotes'), value: formatFullNumber(totals.withNotes), Icon: NoteIcon, iconClass: 'text-info' },
+    { label: t('dashboard.usedTags'), value: formatFullNumber(totals.usedTags), Icon: TagIcon, iconClass: 'text-accent' },
+    { label: t('repo.languages'), value: formatFullNumber(totals.languageCount), Icon: CodeIcon, iconClass: 'text-muted' },
   ]
 
   return (
@@ -40,7 +42,7 @@ export default function CollectionStats({ totals, onOpenDetail }) {
 
       {mostStarred && (
         <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted">
-          El más popular:
+          {t('dashboard.mostPopular')}
           <button
             type="button"
             onClick={handleOpenMostStarred}

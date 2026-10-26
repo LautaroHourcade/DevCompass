@@ -2,6 +2,7 @@
 // Las capturas las escribe solo el servidor (Edge Function sync-repository-stats);
 // desde aquí solo se leen.
 import { supabase } from '../lib/supabase'
+import { TranslatableError } from '../i18n/TranslatableError'
 
 function toAppSnapshot(row) {
   return {
@@ -20,7 +21,7 @@ export async function getRepositoryStats(githubId) {
     .eq('repositories.github_id', githubId)
     .order('captured_at', { ascending: true })
 
-  if (error) throw new Error('No se pudo cargar el historial de estadísticas.')
+  if (error) throw new TranslatableError('errors.stats.load')
 
   return data.map(toAppSnapshot)
 }
@@ -39,7 +40,7 @@ export async function getStatsForRepositories(githubIds) {
     .in('repositories.github_id', githubIds)
     .order('captured_at', { ascending: true })
 
-  if (error) throw new Error('No se pudo cargar el historial de estadísticas.')
+  if (error) throw new TranslatableError('errors.stats.load')
 
   data.forEach((row) => {
     statsByRepo.get(row.repositories.github_id)?.push(toAppSnapshot(row))

@@ -1,8 +1,11 @@
 import { AlertIcon } from './Icons'
 import { buttonClasses } from './buttonStyles'
 import { formatTime } from '../../utils/formatters'
+import { useTranslation } from '../../hooks/useTranslation'
 
 export default function ErrorMessage({ error, onRetry }) {
+  const { t } = useTranslation()
+
   function handleRetry(event) {
     event.preventDefault()
     onRetry()
@@ -20,13 +23,13 @@ export default function ErrorMessage({ error, onRetry }) {
         <p className="font-medium">{error.message}</p>
         {error.resetAt && (
           <p className="text-sm text-muted">
-            Podrás volver a buscar a partir de las {formatTime(error.resetAt)}.
+            {t('errors.searchAgainAt', { time: formatTime(error.resetAt) })}
           </p>
         )}
       </div>
       {onRetry && (
         <button type="button" onClick={handleRetry} className={buttonClasses({ size: 'sm' })}>
-          Reintentar
+          {t('common.retry')}
         </button>
       )}
     </section>

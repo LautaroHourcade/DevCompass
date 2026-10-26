@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronDownIcon, LogOutIcon, UserIcon } from '../ui/Icons'
 import { getDisplayName, getInitials } from '../../services/authService'
+import { useTranslation } from '../../hooks/useTranslation'
 
 const ITEM_CLASSES =
   'flex h-9 w-full cursor-pointer items-center gap-2.5 rounded-md px-2.5 text-sm text-fg transition-colors duration-100 hover:bg-surface-2'
@@ -15,6 +16,7 @@ export default function UserMenu({ user, onSignOut }) {
   const containerRef = useRef(null)
   const triggerRef = useRef(null)
   const menuId = useId()
+  const { t } = useTranslation()
   const displayName = getDisplayName(user)
 
   useEffect(() => {
@@ -57,7 +59,7 @@ export default function UserMenu({ user, onSignOut }) {
         onClick={handleToggle}
         aria-expanded={isOpen}
         aria-controls={menuId}
-        aria-label={`Menú de ${displayName}`}
+        aria-label={t('header.userMenu', { name: displayName })}
         className="flex h-9 cursor-pointer items-center gap-1.5 rounded-full py-0.5 pr-2 pl-0.5 text-muted transition-[background-color,color,scale] duration-150 hover:bg-surface-2 hover:text-fg active:scale-[0.97]"
       >
         <span
@@ -84,13 +86,13 @@ export default function UserMenu({ user, onSignOut }) {
             <li>
               <Link to="/perfil" onClick={() => setIsOpen(false)} className={ITEM_CLASSES}>
                 <UserIcon className="size-4 text-muted" />
-                Tu perfil
+                {t('header.yourProfile')}
               </Link>
             </li>
             <li>
               <button type="button" onClick={handleSignOut} className={ITEM_CLASSES}>
                 <LogOutIcon className="size-4 text-muted" />
-                Cerrar sesión
+                {t('header.signOut')}
               </button>
             </li>
           </ul>

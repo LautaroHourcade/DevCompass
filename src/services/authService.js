@@ -1,29 +1,31 @@
 import { supabase } from '../lib/supabase'
+import { TranslatableError } from '../i18n/TranslatableError'
 
-// Traduce los errores de Supabase Auth a mensajes para el usuario.
+// Errores de Supabase Auth (texto en inglés que devuelve Supabase) -> clave del mensaje para el usuario.
 const KNOWN_ERRORS = [
-  ['Invalid login credentials', 'El email o la contraseña no son correctos.'],
-  ['User already registered', 'Ya existe una cuenta con ese email.'],
-  ['Password should be at least', 'La contraseña debe tener al menos 6 caracteres.'],
-  ['Email not confirmed', 'Confirma tu email antes de iniciar sesión.'],
-  ['New password should be different', 'La nueva contraseña debe ser distinta a la actual.'],
-  ['Invalid otp', 'El código no es válido o ha caducado.'],
-  ['Token has expired or is invalid', 'El código no es válido o ha caducado.'],
-  ['Unable to validate email address', 'El email no es válido.'],
-  ['Email rate limit exceeded', 'Has pedido demasiados emails. Espera unos minutos.'],
-  ['For security purposes', 'Espera unos segundos antes de volver a intentarlo.'],
+  ['Invalid login credentials', 'errors.auth.invalidCredentials'],
+  ['User already registered', 'errors.auth.alreadyRegistered'],
+  ['Password should be at least', 'errors.auth.passwordTooShort'],
+  ['Password should contain', 'errors.auth.passwordNeedsLettersAndDigits'],
+  ['Email not confirmed', 'errors.auth.emailNotConfirmed'],
+  ['New password should be different', 'errors.auth.samePassword'],
+  ['Invalid otp', 'errors.auth.invalidCode'],
+  ['Token has expired or is invalid', 'errors.auth.invalidCode'],
+  ['Unable to validate email address', 'errors.auth.invalidEmail'],
+  ['Email rate limit exceeded', 'errors.auth.emailRateLimit'],
+  ['For security purposes', 'errors.auth.waitBeforeRetry'],
 ]
 
-export class AuthServiceError extends Error {
-  constructor(message) {
-    super(message)
+export class AuthServiceError extends TranslatableError {
+  constructor(key) {
+    super(key)
     this.name = 'AuthServiceError'
   }
 }
 
 function toAuthError(error) {
   const known = KNOWN_ERRORS.find(([text]) => error.message?.includes(text))
-  return new AuthServiceError(known ? known[1] : 'Ha ocurrido un error. Inténtalo de nuevo.')
+  return new AuthServiceError(known ? known[1] : 'errors.generic')
 }
 
 export async function signUp({ email, password, fullName }) {
@@ -116,5 +118,5 @@ export async function changePassword({ newPassword, code }) {
 export async function deleteAccount() {
   const { error } = await supabase.functions.invoke('delete-account', { method: 'POST' })
 
-  if (error) throw new AuthServiceError('No se pudo eliminar la cuenta. Inténtalo de nuevo.')
+  if (error) throw new AuthServiceError('errors.auth.deleteAccount')
 }

@@ -22,3 +22,12 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 .idea/
+
+# Herramientas locales del agente (skills, MCP)
+.agents/
+.claude/
+skills-lock.json
+.mcp.json
+
+# Vercel CLI
+.vercel/

@@ -2,7 +2,8 @@
 // Funciones puras: reciben la lista de useSavedRepos y no tocan la red.
 import { STATUS_OPTIONS } from '../constants/repoStatus'
 
-export const UNKNOWN_LANGUAGE = 'Sin especificar'
+// Valor interno para repositorios sin lenguaje; la interfaz lo muestra traducido (dashboard.unknownLanguage).
+export const UNKNOWN_LANGUAGE = 'unknown'
 
 /** Cuántos repositorios hay en cada estado: [{ ...opción de estado, count }]. */
 export function countByStatus(repos) {

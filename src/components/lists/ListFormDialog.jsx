@@ -5,12 +5,14 @@ import FormAlert from '../ui/FormAlert'
 import { buttonClasses } from '../ui/buttonStyles'
 import { useFormSubmit } from '../../hooks/useFormSubmit'
 import { MAX_LIST_DESCRIPTION_LENGTH, MAX_LIST_NAME_LENGTH } from '../../services/listsService'
+import { useTranslation } from '../../hooks/useTranslation'
 
 /**
  * Crear o editar una lista. Con `list` edita; sin ella crea una nueva.
  * Se monta con un `key` distinto cada vez que se abre, para empezar con los valores correctos.
  */
 export default function ListFormDialog({ isOpen, list = null, onSubmit, onClose }) {
+  const { t } = useTranslation()
   const isEditing = Boolean(list)
   const [name, setName] = useState(list?.name ?? '')
   const [description, setDescription] = useState(list?.description ?? '')
@@ -22,7 +24,7 @@ export default function ListFormDialog({ isOpen, list = null, onSubmit, onClose 
 
     const trimmedName = name.trim()
     if (!trimmedName) {
-      setNameError('Ponle un nombre a la lista.')
+      setNameError(t('lists.form.nameRequired'))
       return
     }
     setNameError('')
@@ -40,15 +42,15 @@ export default function ListFormDialog({ isOpen, list = null, onSubmit, onClose 
     <Modal isOpen={isOpen} onClose={onClose} labelledBy="list-form-title">
       <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
         <h2 id="list-form-title" className="text-xl font-semibold">
-          {isEditing ? 'Editar lista' : 'Nueva lista'}
+          {isEditing ? t('lists.form.editTitle') : t('lists.new')}
         </h2>
 
         {error && <FormAlert type="error">{error}</FormAlert>}
 
         <TextField
           id="list-name"
-          label="Nombre"
-          placeholder="Ej: Herramientas de testing"
+          label={t('auth.name')}
+          placeholder={t('lists.form.namePlaceholder')}
           maxLength={MAX_LIST_NAME_LENGTH}
           value={name}
           onChange={setName}
@@ -56,20 +58,20 @@ export default function ListFormDialog({ isOpen, list = null, onSubmit, onClose 
         />
         <TextField
           id="list-description"
-          label="Descripción (opcional)"
+          label={t('lists.form.description')}
           multiline
           maxLength={MAX_LIST_DESCRIPTION_LENGTH}
-          hint={`${description.length}/${MAX_LIST_DESCRIPTION_LENGTH} caracteres`}
+          hint={t('lists.form.charCount', { length: description.length, max: MAX_LIST_DESCRIPTION_LENGTH })}
           value={description}
           onChange={setDescription}
         />
 
         <footer className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <button type="button" onClick={handleCancel} disabled={isSubmitting} className={buttonClasses()}>
-            Cancelar
+            {t('common.cancel')}
           </button>
           <button type="submit" disabled={isSubmitting} className={buttonClasses({ variant: 'primary' })}>
-            {isSubmitting ? 'Guardando…' : isEditing ? 'Guardar cambios' : 'Crear lista'}
+            {isSubmitting ? t('common.saving') : isEditing ? t('profile.details.submit') : t('lists.form.create')}
           </button>
         </footer>
       </form>

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { BookmarkIcon } from '../ui/Icons'
 import { buttonClasses } from '../ui/buttonStyles'
+import { useTranslation } from '../../hooks/useTranslation'
 
 /** Indicador de actividad: un arco que gira rápido (un giro ágil hace que la espera parezca más corta). */
 function Spinner({ className }) {
@@ -22,6 +23,7 @@ function Spinner({ className }) {
  */
 export default function SaveButton({ repo, isSaved, onToggleSave, compact = false }) {
   // Solo se anima tras un clic del usuario, no al cargar una colección ya guardada.
+  const { t } = useTranslation()
   const [hasToggled, setHasToggled] = useState(false)
   const [isPending, setIsPending] = useState(false)
 
@@ -40,8 +42,8 @@ export default function SaveButton({ repo, isSaved, onToggleSave, compact = fals
   }
 
   const iconSize = compact ? 'size-[1.8rem]' : 'size-4'
-  const label = isSaved ? 'Quitar de guardados' : 'Guardar repositorio'
-  const pendingLabel = isSaved ? 'Quitando…' : 'Guardando…'
+  const label = isSaved ? t('repo.unsave') : t('repo.save')
+  const pendingLabel = isSaved ? t('repo.removing') : t('common.saving')
 
   // key: al cambiar de estado el icono se vuelve a montar y repite la animación.
   const icon = isPending ? (
@@ -81,7 +83,7 @@ export default function SaveButton({ repo, isSaved, onToggleSave, compact = fals
       className={buttonClasses({ className: isSaved ? 'border-accent/50 text-accent' : '' })}
     >
       {icon}
-      {isPending ? pendingLabel : isSaved ? 'Guardado' : 'Guardar'}
+      {isPending ? pendingLabel : isSaved ? t('repo.saved') : t('common.save')}
     </button>
   )
 }

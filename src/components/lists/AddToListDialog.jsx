@@ -4,12 +4,14 @@ import Modal from '../ui/Modal'
 import FormAlert from '../ui/FormAlert'
 import { CheckIcon, ListIcon } from '../ui/Icons'
 import { buttonClasses } from '../ui/buttonStyles'
+import { useTranslation } from '../../hooks/useTranslation'
 
 /**
  * Marca o desmarca en qué listas está un repositorio guardado.
  * Cada casilla guarda el cambio al momento.
  */
 export default function AddToListDialog({ repo, lists, onAdd, onRemove, onClose }) {
+  const { t } = useTranslation()
   const [pendingListId, setPendingListId] = useState(null)
   const [error, setError] = useState('')
 
@@ -41,7 +43,7 @@ export default function AddToListDialog({ repo, lists, onAdd, onRemove, onClose 
         <div className="flex flex-col gap-5">
           <header className="flex flex-col gap-1">
             <h2 id="add-to-list-title" className="text-xl font-semibold">
-              Añadir a lista
+              {t('saved.addToList')}
             </h2>
             <p className="font-mono text-sm text-muted">{repo.fullName}</p>
           </header>
@@ -50,15 +52,15 @@ export default function AddToListDialog({ repo, lists, onAdd, onRemove, onClose 
 
           {lists.length === 0 ? (
             <FormAlert type="info">
-              Todavía no tienes listas.{' '}
+              {t('lists.addDialog.noLists')}{' '}
               <Link to="/listas" onClick={onClose} className="font-medium text-accent hover:underline">
-                Crea tu primera lista
+                {t('lists.addDialog.createFirst')}
               </Link>
               .
             </FormAlert>
           ) : (
             <fieldset className="flex flex-col gap-2">
-              <legend className="sr-only">Listas</legend>
+              <legend className="sr-only">{t('nav.lists')}</legend>
               {lists.map((list) => {
                 const isInList = list.savedIds.includes(repo.savedId)
                 const isPending = pendingListId === list.id
@@ -96,7 +98,7 @@ export default function AddToListDialog({ repo, lists, onAdd, onRemove, onClose 
 
           <footer className="flex justify-end">
             <button type="button" onClick={handleClose} className={buttonClasses()}>
-              Hecho
+              {t('lists.addDialog.done')}
             </button>
           </footer>
         </div>

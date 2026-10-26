@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import { NavLink } from 'react-router-dom'
+import { useTranslation } from '../../hooks/useTranslation'
 
 /**
  * Pestañas de navegación con el indicador recortado por clip-path.
@@ -11,6 +12,7 @@ import { NavLink } from 'react-router-dom'
 export default function NavTabs({ items, activeTo, savedCount }) {
   const listRef = useRef(null)
   const [clipPath, setClipPath] = useState(null)
+  const { t } = useTranslation()
 
   useLayoutEffect(() => {
     const list = listRef.current
@@ -32,10 +34,10 @@ export default function NavTabs({ items, activeTo, savedCount }) {
     const observer = new ResizeObserver(updateClip)
     observer.observe(list)
     return () => observer.disconnect()
-  }, [activeTo, items.length, savedCount])
+  }, [activeTo, items.length, savedCount, t])
 
   return (
-    <nav aria-label="Principal" className="relative">
+    <nav aria-label={t('header.mainNav')} className="relative">
       <ul ref={listRef} className="flex items-center gap-0.5">
         {items.map((item) => (
           <li key={item.to}>
@@ -69,9 +71,11 @@ export default function NavTabs({ items, activeTo, savedCount }) {
 }
 
 function TabContent({ item, savedCount, isActiveCopy = false }) {
+  const { t } = useTranslation()
+
   return (
     <>
-      {item.label}
+      {t(item.labelKey)}
       {item.to === '/guardados' && savedCount > 0 && (
         <span
           className={`font-mono text-xs tabular-nums ${isActiveCopy ? 'text-canvas/60' : 'text-subtle'}`}

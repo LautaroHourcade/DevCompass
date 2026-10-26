@@ -1,5 +1,6 @@
 // Opciones de los filtros de búsqueda.
-// "value" es lo que entiende la API de GitHub, "label" lo que ve el usuario.
+// "value" es lo que entiende la API de GitHub, "label" lo que ve el usuario
+// ("labelKey" si el texto se traduce: ver translateOptions en hooks/useTranslation.js).
 
 export const LANGUAGE_OPTIONS = [
   { value: 'javascript', label: 'JavaScript' },
@@ -41,17 +42,17 @@ export const LICENSE_OPTIONS = [
 
 // Más intuitivo que pedir una fecha exacta: "actualizado en los últimos X días".
 export const UPDATED_WITHIN_OPTIONS = [
-  { value: '7', label: 'Última semana' },
-  { value: '30', label: 'Último mes' },
-  { value: '180', label: 'Últimos 6 meses' },
-  { value: '365', label: 'Último año' },
+  { value: '7', labelKey: 'filters.updated.week' },
+  { value: '30', labelKey: 'filters.updated.month' },
+  { value: '180', labelKey: 'filters.updated.sixMonths' },
+  { value: '365', labelKey: 'filters.updated.year' },
 ]
 
 export const SORT_OPTIONS = [
-  { value: 'best-match', label: 'Más relevantes' },
-  { value: 'stars', label: 'Más stars' },
-  { value: 'forks', label: 'Más forks' },
-  { value: 'updated', label: 'Actualizados recientemente' },
+  { value: 'best-match', labelKey: 'filters.sort.bestMatch' },
+  { value: 'stars', labelKey: 'filters.sort.stars' },
+  { value: 'forks', labelKey: 'filters.sort.forks' },
+  { value: 'updated', labelKey: 'filters.sort.updated' },
 ]
 
 export const DEFAULT_FILTERS = {

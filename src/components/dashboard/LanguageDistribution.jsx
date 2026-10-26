@@ -1,5 +1,7 @@
 import LanguageTag from '../repos/LanguageTag'
 import { getLanguageColor } from '../../constants/languageColors'
+import { UNKNOWN_LANGUAGE } from '../../utils/collectionStats'
+import { useTranslation } from '../../hooks/useTranslation'
 
 const MAX_VISIBLE_LANGUAGES = 6
 
@@ -8,8 +10,10 @@ const MAX_VISIBLE_LANGUAGES = 6
  * languages: resultado de getLanguageDistribution (ordenado de más a menos).
  */
 export default function LanguageDistribution({ languages }) {
+  const { t } = useTranslation()
+
   if (languages.length === 0) {
-    return <p className="text-sm text-muted">Aún no hay lenguajes que mostrar.</p>
+    return <p className="text-sm text-muted">{t('dashboard.noLanguages')}</p>
   }
 
   const visible = languages.slice(0, MAX_VISIBLE_LANGUAGES)
@@ -21,9 +25,9 @@ export default function LanguageDistribution({ languages }) {
         {visible.map((language) => (
           <li key={language.name} className="flex flex-col gap-1.5 text-sm">
             <span className="flex items-center justify-between gap-3">
-              <LanguageTag language={language.name} />
+              <LanguageTag language={language.name === UNKNOWN_LANGUAGE ? t('dashboard.unknownLanguage') : language.name} />
               <span className="font-mono text-xs text-muted tabular-nums">
-                {language.count} {language.count === 1 ? 'repo' : 'repos'} · {Math.round(language.percentage)}%
+                {t('dashboard.repoCount', { count: language.count })} · {Math.round(language.percentage)}%
               </span>
             </span>
             <span aria-hidden="true" className="block h-1.5 overflow-hidden rounded-full bg-surface-2">
@@ -37,7 +41,7 @@ export default function LanguageDistribution({ languages }) {
       </ul>
       {hiddenCount > 0 && (
         <p className="text-xs text-muted">
-          Y {hiddenCount} {hiddenCount === 1 ? 'lenguaje más' : 'lenguajes más'}.
+          {t('dashboard.moreLanguages', { count: hiddenCount })}
         </p>
       )}
     </div>

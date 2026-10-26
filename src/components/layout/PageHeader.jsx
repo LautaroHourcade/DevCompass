@@ -1,5 +1,6 @@
 import { useLocation } from 'react-router-dom'
 import { formatBearing, getSectionForPath } from '../../constants/navigation'
+import { useTranslation } from '../../hooks/useTranslation'
 
 /**
  * Cabecera de página con la "línea de rumbo" de DevCompass: el rumbo de la sección,
@@ -9,13 +10,14 @@ import { formatBearing, getSectionForPath } from '../../constants/navigation'
 export default function PageHeader({ eyebrow, title, titleId, description, children }) {
   const { pathname } = useLocation()
   const section = getSectionForPath(pathname)
+  const { t } = useTranslation()
 
   return (
     <header className="flex flex-col gap-4 animate-fade-up">
       <p className="flex items-center gap-3 font-mono text-2xs tracking-[0.14em] text-muted uppercase">
         {section && (
           <span className="text-accent tabular-nums">
-            <span className="sr-only">Rumbo </span>
+            <span className="sr-only">{t('header.bearing')} </span>
             {formatBearing(section.bearing)}
           </span>
         )}

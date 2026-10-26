@@ -1,8 +1,10 @@
 import SelectMenu from '../ui/SelectMenu'
 import { STATUS_OPTIONS, getStatusOption } from '../../constants/repoStatus'
+import { translateOptions, useTranslation } from '../../hooks/useTranslation'
 
 /** Desplegable con aspecto de insignia para cambiar el estado de un repositorio guardado. */
 export default function StatusSelect({ id, value, onChange, disabled = false, label }) {
+  const { t } = useTranslation()
   const option = getStatusOption(value)
   const labelId = `${id}-label`
 
@@ -14,7 +16,7 @@ export default function StatusSelect({ id, value, onChange, disabled = false, la
       <SelectMenu
         id={id}
         value={option.value}
-        options={STATUS_OPTIONS}
+        options={translateOptions(STATUS_OPTIONS, t)}
         onChange={onChange}
         labelledBy={labelId}
         disabled={disabled}

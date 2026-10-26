@@ -1,7 +1,13 @@
 // Preparación común de los tests (Vitest + Testing Library).
 import '@testing-library/jest-dom/vitest'
 import { cleanup } from '@testing-library/react'
-import { afterEach } from 'vitest'
+import { afterEach, beforeEach } from 'vitest'
+import { setLanguage } from '../i18n/store'
+
+// jsdom simula un navegador en inglés: los tests usan el español, el idioma por defecto de la app.
+beforeEach(() => {
+  setLanguage('es')
+})
 
 afterEach(() => {
   cleanup()

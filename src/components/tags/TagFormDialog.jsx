@@ -5,24 +5,26 @@ import FormAlert from '../ui/FormAlert'
 import { buttonClasses } from '../ui/buttonStyles'
 import { useFormSubmit } from '../../hooks/useFormSubmit'
 import { MAX_TAG_NAME_LENGTH, normalizeTagName } from '../../services/tagsService'
+import { useTranslation } from '../../hooks/useTranslation'
 
 /**
  * Crear o renombrar una etiqueta. Con `tag` renombra; sin ella crea una nueva.
  * existingTags: para avisar de duplicados (sin distinguir mayúsculas ni espacios) antes de ir a Supabase.
  */
 export default function TagFormDialog({ tag = null, existingTags, onSubmit, onClose }) {
+  const { t } = useTranslation()
   const isEditing = Boolean(tag)
   const [name, setName] = useState(tag?.name ?? '')
   const [nameError, setNameError] = useState('')
   const { isSubmitting, error, run } = useFormSubmit()
 
   function getNameError(normalizedName) {
-    if (!normalizedName) return 'Escribe un nombre para la etiqueta.'
+    if (!normalizedName) return t('tags.form.nameRequired')
 
     const isDuplicate = existingTags.some(
       (candidate) => candidate.id !== tag?.id && candidate.name.toLowerCase() === normalizedName.toLowerCase(),
     )
-    if (isDuplicate) return 'Ya tienes una etiqueta con ese nombre.'
+    if (isDuplicate) return t('errors.tags.duplicate')
 
     return ''
   }
@@ -48,18 +50,18 @@ export default function TagFormDialog({ tag = null, existingTags, onSubmit, onCl
     <Modal isOpen onClose={onClose} labelledBy="tag-form-title">
       <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
         <h2 id="tag-form-title" className="text-xl font-semibold">
-          {isEditing ? 'Renombrar etiqueta' : 'Nueva etiqueta'}
+          {isEditing ? t('tags.form.renameTitle') : t('tags.new')}
         </h2>
 
         {error && <FormAlert type="error">{error}</FormAlert>}
 
         <TextField
           id="tag-name"
-          label="Nombre"
-          placeholder="Ej: React, Backend, Testing"
+          label={t('auth.name')}
+          placeholder={t('tags.form.placeholder')}
           maxLength={MAX_TAG_NAME_LENGTH}
           autoComplete="off"
-          hint={`Máximo ${MAX_TAG_NAME_LENGTH} caracteres.`}
+          hint={t('tags.form.hint', { max: MAX_TAG_NAME_LENGTH })}
           value={name}
           onChange={setName}
           error={nameError}
@@ -67,10 +69,10 @@ export default function TagFormDialog({ tag = null, existingTags, onSubmit, onCl
 
         <footer className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <button type="button" onClick={handleCancel} disabled={isSubmitting} className={buttonClasses()}>
-            Cancelar
+            {t('common.cancel')}
           </button>
           <button type="submit" disabled={isSubmitting} className={buttonClasses({ variant: 'primary' })}>
-            {isSubmitting ? 'Guardando…' : isEditing ? 'Guardar cambios' : 'Crear etiqueta'}
+            {isSubmitting ? t('common.saving') : isEditing ? t('profile.details.submit') : t('tags.form.create')}
           </button>
         </footer>
       </form>

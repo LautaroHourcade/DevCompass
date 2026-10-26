@@ -1,10 +1,11 @@
 import { CompassMark } from '../ui/Icons'
+import { useTranslation } from '../../hooks/useTranslation'
 
 // Lo que ofrece DevCompass, con su rumbo como en la navegación.
 const VALUE_POINTS = [
-  { bearing: '000°', text: 'Descubre repositorios con búsqueda y filtros por lenguaje, stars, forks y licencia.' },
-  { bearing: '120°', text: 'Guarda tu colección y organízala con estados, notas, etiquetas y listas.' },
-  { bearing: '300°', text: 'Sigue su evolución día a día y compara hasta tres proyectos.' },
+  { bearing: '000°', textKey: 'auth.card.discover' },
+  { bearing: '120°', textKey: 'auth.card.organize' },
+  { bearing: '300°', textKey: 'auth.card.track' },
 ]
 
 /**
@@ -12,23 +13,25 @@ const VALUE_POINTS = [
  * asienta al cargar, una sola vez) y el formulario. En móvil solo el formulario.
  */
 export default function AuthCard({ title, titleId, description, children, footer }) {
+  const { t } = useTranslation()
+
   return (
     <div className="mx-auto grid w-full max-w-[100rem] items-center gap-12 lg:grid-cols-[1fr_44rem] lg:gap-16">
       <aside aria-hidden="true" className="relative isolate hidden flex-col gap-8 lg:flex">
         <div className="dot-grid absolute -inset-10 -z-10" />
         <CompassMark className="size-20 text-fg" needleClassName="animate-needle-settle motion-reduce:animate-none" />
         <p className="max-w-[48rem] text-4xl leading-[1.05] font-semibold tracking-[-0.04em]">
-          Tu brújula para el <span className="text-muted">código abierto.</span>
+          {t('auth.card.headline')} <span className="text-muted">{t('auth.card.headlineMuted')}</span>
         </p>
         <ul className="flex max-w-[46rem] flex-col gap-4">
-          {VALUE_POINTS.map(({ bearing, text }, index) => (
+          {VALUE_POINTS.map(({ bearing, textKey }, index) => (
             <li
               key={bearing}
               style={{ animationDelay: `${200 + index * 60}ms` }}
               className="flex gap-4 border-t border-line pt-4 text-sm text-muted animate-fade-up"
             >
               <span className="font-mono text-xs text-accent tabular-nums">{bearing}</span>
-              {text}
+              {t(textKey)}
             </li>
           ))}
         </ul>

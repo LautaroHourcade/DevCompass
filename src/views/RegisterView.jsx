@@ -13,9 +13,11 @@ import {
   getPasswordError,
   hasNoErrors,
 } from '../utils/validation'
+import { useTranslation } from '../hooks/useTranslation'
 
 export default function RegisterView() {
   const location = useLocation()
+  const { t } = useTranslation()
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -28,7 +30,7 @@ export default function RegisterView() {
     event.preventDefault()
 
     const errors = {
-      fullName: fullName.trim() ? '' : 'Escribe tu nombre.',
+      fullName: fullName.trim() ? '' : t('validation.nameRequired'),
       email: getEmailError(email),
       password: getPasswordError(password),
       passwordConfirm: getPasswordConfirmError(password, passwordConfirm),
@@ -47,17 +49,17 @@ export default function RegisterView() {
   if (registeredEmail) {
     return (
       <AuthCard
-        title="Revisa tu correo"
+        title={t('auth.register.checkEmailTitle')}
         titleId="register-done-title"
         footer={
           <Link to="/entrar" className="font-medium text-accent hover:underline">
-            Ir a iniciar sesión
+            {t('auth.register.goToLogin')}
           </Link>
         }
       >
         <FormAlert type="success">
-          Te hemos enviado un enlace a <strong>{registeredEmail}</strong>. Ábrelo para confirmar tu cuenta y
-          después inicia sesión.
+          {t('auth.register.checkEmailBefore')} <strong>{registeredEmail}</strong>
+          {t('auth.register.checkEmailAfter')}
         </FormAlert>
       </AuthCard>
     )
@@ -65,14 +67,14 @@ export default function RegisterView() {
 
   return (
     <AuthCard
-      title="Crea tu cuenta"
+      title={t('auth.register.title')}
       titleId="register-title"
-      description="Guarda repositorios, organízalos en listas y síguelos desde cualquier dispositivo."
+      description={t('auth.register.description')}
       footer={
         <>
-          ¿Ya tienes cuenta?{' '}
+          {t('auth.register.haveAccount')}{' '}
           <Link to="/entrar" state={location.state} className="font-medium text-accent hover:underline">
-            Inicia sesión
+            {t('auth.register.signIn')}
           </Link>
         </>
       }
@@ -82,7 +84,7 @@ export default function RegisterView() {
 
         <TextField
           id="register-name"
-          label="Nombre"
+          label={t('auth.name')}
           autoComplete="name"
           value={fullName}
           onChange={setFullName}
@@ -90,7 +92,7 @@ export default function RegisterView() {
         />
         <TextField
           id="register-email"
-          label="Email"
+          label={t('auth.email')}
           type="email"
           autoComplete="email"
           value={email}
@@ -99,17 +101,17 @@ export default function RegisterView() {
         />
         <TextField
           id="register-password"
-          label="Contraseña"
+          label={t('auth.password')}
           type="password"
           autoComplete="new-password"
-          hint={`Mínimo ${MIN_PASSWORD_LENGTH} caracteres.`}
+          hint={t('validation.passwordHint', { min: MIN_PASSWORD_LENGTH })}
           value={password}
           onChange={setPassword}
           error={fieldErrors.password}
         />
         <TextField
           id="register-password-confirm"
-          label="Repite la contraseña"
+          label={t('auth.repeatPassword')}
           type="password"
           autoComplete="new-password"
           value={passwordConfirm}
@@ -122,7 +124,7 @@ export default function RegisterView() {
           disabled={isSubmitting}
           className={buttonClasses({ variant: 'primary', className: 'mt-2 w-full' })}
         >
-          {isSubmitting ? 'Creando cuenta…' : 'Crear cuenta'}
+          {isSubmitting ? t('auth.register.submitting') : t('auth.register.submit')}
         </button>
       </form>
     </AuthCard>

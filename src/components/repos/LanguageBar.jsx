@@ -1,10 +1,11 @@
 import LanguageTag from './LanguageTag'
 import { getLanguageColor } from '../../constants/languageColors'
+import { useTranslation } from '../../hooks/useTranslation'
 
 const MAX_VISIBLE_LANGUAGES = 6
 
 // Agrupa los lenguajes minoritarios en "Otros" para que la barra sea legible.
-function groupSmallLanguages(languages) {
+function groupSmallLanguages(languages, othersLabel) {
   if (languages.length <= MAX_VISIBLE_LANGUAGES) return languages
 
   const visible = languages.slice(0, MAX_VISIBLE_LANGUAGES - 1)
@@ -12,7 +13,7 @@ function groupSmallLanguages(languages) {
     .slice(MAX_VISIBLE_LANGUAGES - 1)
     .reduce((sum, language) => sum + language.percentage, 0)
 
-  return [...visible, { name: 'Otros', percentage: othersPercentage }]
+  return [...visible, { name: othersLabel, percentage: othersPercentage }]
 }
 
 function formatPercentage(value) {
@@ -20,7 +21,8 @@ function formatPercentage(value) {
 }
 
 export default function LanguageBar({ languages }) {
-  const groupedLanguages = groupSmallLanguages(languages)
+  const { t } = useTranslation()
+  const groupedLanguages = groupSmallLanguages(languages, t('repo.otherLanguages'))
 
   return (
     <div className="flex flex-col gap-3">

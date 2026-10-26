@@ -1,5 +1,6 @@
 import { DEFAULT_QUERY } from '../constants/filters'
-import { getDateDaysAgo } from '../utils/formatters'
+import { OTHER_LICENSE, getDateDaysAgo } from '../utils/formatters'
+import { TranslatableError } from '../i18n/TranslatableError'
 
 // El frontend nunca habla directamente con api.github.com: pasa por la Edge Function
 // github-proxy de Supabase, que añade el token (secreto del servidor, nunca en el navegador).
@@ -10,9 +11,9 @@ export const RESULTS_PER_PAGE = 24
 // La API de búsqueda de GitHub solo devuelve los primeros 1000 resultados.
 const MAX_SEARCH_RESULTS = 1000
 
-export class GitHubApiError extends Error {
-  constructor(message, { status, resetAt = null } = {}) {
-    super(message)
+export class GitHubApiError extends TranslatableError {
+  constructor(key, { status, resetAt = null } = {}) {
+    super(key)
     this.name = 'GitHubApiError'
     this.status = status
     this.resetAt = resetAt
@@ -39,23 +40,23 @@ function createApiError(response) {
 
   if (isRateLimited) {
     const resetAt = reset ? new Date(Number(reset) * 1000) : null
-    return new GitHubApiError('Has alcanzado el límite de búsquedas de GitHub.', {
+    return new GitHubApiError('errors.github.rateLimited', {
       status: response.status,
       resetAt,
     })
   }
 
   if (response.status === 422) {
-    return new GitHubApiError('La búsqueda no es válida. Prueba con otros términos o filtros.', {
+    return new GitHubApiError('errors.github.invalidQuery', {
       status: response.status,
     })
   }
 
   if (response.status === 404) {
-    return new GitHubApiError('No se ha encontrado el repositorio.', { status: response.status })
+    return new GitHubApiError('errors.github.notFound', { status: response.status })
   }
 
-  return new GitHubApiError('No se pudo conectar con GitHub. Inténtalo de nuevo.', {
+  return new GitHubApiError('errors.github.connection', {
     status: response.status,
   })
 }
@@ -105,7 +106,7 @@ export function mapRepository(apiRepo) {
 function getLicenseName(license) {
   if (!license) return null
   if (license.spdx_id && license.spdx_id !== 'NOASSERTION') return license.spdx_id
-  return 'Otra'
+  return OTHER_LICENSE
 }
 
 export async function searchRepositories({ query, sort, page = 1, signal }) {

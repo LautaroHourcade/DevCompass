@@ -2,20 +2,26 @@ import LanguageTag from '../repos/LanguageTag'
 import { CloseIcon } from '../ui/Icons'
 import { buttonClasses } from '../ui/buttonStyles'
 import { getStatusOption } from '../../constants/repoStatus'
-import { formatDateTime, formatFullNumber, formatRelativeDate } from '../../utils/formatters'
+import { formatDateTime, formatFullNumber, formatLicense, formatRelativeDate } from '../../utils/formatters'
+import { useTranslation } from '../../hooks/useTranslation'
 
-// Filas de la tabla. numeric: se resalta el valor más alto.
+// Filas de la tabla (labelKey: clave de traducción). numeric: se resalta el valor más alto.
 const METRICS = [
-  { label: 'Stars', numeric: true, getValue: (repo) => repo.stars },
-  { label: 'Forks', numeric: true, getValue: (repo) => repo.forks },
-  { label: 'Issues abiertos', numeric: true, getValue: (repo) => repo.openIssues },
-  { label: 'Lenguaje', render: (repo) => (repo.language ? <LanguageTag language={repo.language} /> : 'Sin especificar') },
-  { label: 'Licencia', render: (repo) => repo.license ?? 'Sin licencia' },
-  { label: 'Última actualización', render: (repo) => formatRelativeDate(repo.updatedAt) },
-  { label: 'Estado', render: (repo) => getStatusOption(repo.status).label },
+  { labelKey: 'compare.table.stars', numeric: true, getValue: (repo) => repo.stars },
+  { labelKey: 'compare.table.forks', numeric: true, getValue: (repo) => repo.forks },
+  { labelKey: 'repo.openIssues', numeric: true, getValue: (repo) => repo.openIssues },
   {
-    label: 'Última captura',
-    render: (repo, latestSnapshot) => (latestSnapshot ? formatDateTime(latestSnapshot.capturedAt) : 'Sin capturas'),
+    labelKey: 'filters.language',
+    render: (repo, latestSnapshot, t) =>
+      repo.language ? <LanguageTag language={repo.language} /> : t('dashboard.unknownLanguage'),
+  },
+  { labelKey: 'repo.license', render: (repo) => formatLicense(repo.license) },
+  { labelKey: 'compare.table.lastUpdate', render: (repo) => formatRelativeDate(repo.updatedAt) },
+  { labelKey: 'saved.filters.status', render: (repo, latestSnapshot, t) => t(getStatusOption(repo.status).labelKey) },
+  {
+    labelKey: 'history.latest',
+    render: (repo, latestSnapshot, t) =>
+      latestSnapshot ? formatDateTime(latestSnapshot.capturedAt) : t('compare.table.noSnapshots'),
   },
 ]
 
@@ -25,10 +31,12 @@ const METRICS = [
  * - onRemove(repo): lo quita de la comparación (no de la colección). onOpenDetail(repo): abre su detalle.
  */
 export default function CompareTable({ items, onRemove, onOpenDetail }) {
+  const { t } = useTranslation()
+
   return (
     <div className="overflow-x-auto rounded-xl border border-line bg-surface shadow-card animate-fade-up">
       <table className="w-full min-w-[56rem] text-left text-sm">
-        <caption className="sr-only">Estadísticas actuales de los repositorios comparados</caption>
+        <caption className="sr-only">{t('compare.table.caption')}</caption>
         <thead>
           <tr className="border-b border-line">
             <td className="sticky left-0 z-10 w-[16rem] bg-surface p-4" />
@@ -44,15 +52,15 @@ export default function CompareTable({ items, onRemove, onOpenDetail }) {
             const highest = metric.numeric ? getHighest(items.map(({ repo }) => metric.getValue(repo))) : null
 
             return (
-              <tr key={metric.label} className="border-b border-line/60 last:border-b-0">
+              <tr key={metric.labelKey} className="border-b border-line/60 last:border-b-0">
                 <th scope="row" className="sticky left-0 z-10 bg-surface p-4 font-mono text-2xs font-normal tracking-[0.08em] text-subtle uppercase">
-                  {metric.label}
+                  {t(metric.labelKey)}
                 </th>
                 {items.map(({ repo, latestSnapshot }) => {
                   if (!metric.numeric) {
                     return (
                       <td key={repo.id} className="p-4">
-                        {metric.render(repo, latestSnapshot)}
+                        {metric.render(repo, latestSnapshot, t)}
                       </td>
                     )
                   }
@@ -62,7 +70,7 @@ export default function CompareTable({ items, onRemove, onOpenDetail }) {
                   return (
                     <td key={repo.id} className={`p-4 font-mono tabular-nums ${isHighest ? 'bg-accent-soft font-medium text-accent' : ''}`}>
                       {formatFullNumber(value)}
-                      {isHighest && <span className="sr-only"> (el más alto)</span>}
+                      {isHighest && <span className="sr-only"> {t('compare.table.highest')}</span>}
                     </td>
                   )
                 })}
@@ -82,6 +90,8 @@ function getHighest(values) {
 }
 
 function RepoColumnHeader({ repo, color, onRemove, onOpenDetail }) {
+  const { t } = useTranslation()
+
   function handleOpen(event) {
     event.preventDefault()
     onOpenDetail(repo)
@@ -108,8 +118,8 @@ function RepoColumnHeader({ repo, color, onRemove, onOpenDetail }) {
       <button
         type="button"
         onClick={handleRemove}
-        title="Quitar de la comparación"
-        aria-label={`Quitar ${repo.name} de la comparación`}
+        title={t('compare.table.remove')}
+        aria-label={t('compare.table.removeRepo', { name: repo.name })}
         className={buttonClasses({ variant: 'ghost', size: 'icon', className: '-mt-2 -mr-2' })}
       >
         <CloseIcon className="size-4" />

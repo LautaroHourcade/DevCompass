@@ -8,6 +8,7 @@ import PageLoader from '../components/ui/PageLoader'
 import { EditIcon, PlusIcon, TagIcon, TrashIcon } from '../components/ui/Icons'
 import { buttonClasses } from '../components/ui/buttonStyles'
 import { useToast } from '../hooks/useToast'
+import { useTranslation } from '../hooks/useTranslation'
 
 /**
  * Consultar, crear, renombrar y eliminar etiquetas.
@@ -16,6 +17,7 @@ import { useToast } from '../hooks/useToast'
 export default function TagsView({ tagsState, savedRepos, lists, onTagDeleted }) {
   const { tags, isLoading, loadError, reload, createTag, renameTag, deleteTag } = tagsState
   const { showToast } = useToast()
+  const { t } = useTranslation()
   // null: cerrado. { tag: null }: crear. { tag }: renombrar.
   const [formState, setFormState] = useState(null)
   const [tagToDelete, setTagToDelete] = useState(null)
@@ -29,9 +31,7 @@ export default function TagsView({ tagsState, savedRepos, lists, onTagDeleted })
   }
 
   function describeUsage(repoCount, listCount) {
-    const repoText = repoCount === 1 ? '1 repositorio' : `${repoCount} repositorios`
-    const listText = listCount === 1 ? '1 lista' : `${listCount} listas`
-    return `${repoText} · ${listText}`
+    return `${t('tags.repoCount', { count: repoCount })} · ${t('tags.listCount', { count: listCount })}`
   }
 
   function handleOpenCreate(event) {
@@ -42,23 +42,23 @@ export default function TagsView({ tagsState, savedRepos, lists, onTagDeleted })
   async function handleSubmitForm(name) {
     if (formState.tag) {
       await renameTag(formState.tag.id, name)
-      showToast(`Etiqueta renombrada a "${name}"`, 'success')
+      showToast(t('tags.toast.renamed', { name }), 'success')
     } else {
       await createTag(name)
-      showToast(`Etiqueta "${name}" creada`, 'success')
+      showToast(t('tags.toast.created', { name }), 'success')
     }
   }
 
   async function handleConfirmDelete() {
     await deleteTag(tagToDelete.id)
     onTagDeleted(tagToDelete.id)
-    showToast(`Etiqueta "${tagToDelete.name}" eliminada`, 'info')
+    showToast(t('tags.toast.deleted', { name: tagToDelete.name }), 'info')
   }
 
   const createButton = (
     <button type="button" onClick={handleOpenCreate} className={buttonClasses({ variant: 'primary' })}>
       <PlusIcon className="size-4" />
-      Nueva etiqueta
+      {t('tags.new')}
     </button>
   )
 
@@ -67,10 +67,10 @@ export default function TagsView({ tagsState, savedRepos, lists, onTagDeleted })
   return (
     <section aria-labelledby="tags-title" className="flex flex-col gap-6">
       <PageHeader
-        eyebrow="Clasificación"
-        title="Tus etiquetas"
+        eyebrow={t('tags.eyebrow')}
+        title={t('tags.title')}
         titleId="tags-title"
-        description="Clasifica tus repositorios guardados y tus listas por tecnología, tema o como prefieras."
+        description={t('tags.description')}
       >
         {tags.length > 0 && createButton}
       </PageHeader>
@@ -78,12 +78,12 @@ export default function TagsView({ tagsState, savedRepos, lists, onTagDeleted })
       {loadError ? (
         <ErrorMessage error={loadError} onRetry={reload} />
       ) : isLoading && tags.length === 0 ? (
-        <PageLoader label="Cargando tus etiquetas…" />
+        <PageLoader label={t('tags.loading')} />
       ) : tags.length === 0 ? (
         <EmptyState
           icon={<TagIcon className="size-6" />}
-          title="Todavía no tienes etiquetas"
-          message="Crea etiquetas como Java, React o DevOps y asígnalas a tus repositorios guardados y a tus listas."
+          title={t('tags.empty.title')}
+          message={t('tags.empty.message')}
           action={createButton}
         />
       ) : (
@@ -110,8 +110,8 @@ export default function TagsView({ tagsState, savedRepos, lists, onTagDeleted })
                     event.preventDefault()
                     setFormState({ tag })
                   }}
-                  aria-label={`Renombrar la etiqueta ${tag.name}`}
-                  title="Renombrar"
+                  aria-label={t('tags.renameTag', { name: tag.name })}
+                  title={t('tags.rename')}
                   className={buttonClasses({ variant: 'ghost', size: 'icon' })}
                 >
                   <EditIcon className="size-4" />
@@ -122,8 +122,8 @@ export default function TagsView({ tagsState, savedRepos, lists, onTagDeleted })
                     event.preventDefault()
                     setTagToDelete(tag)
                   }}
-                  aria-label={`Eliminar la etiqueta ${tag.name}`}
-                  title="Eliminar"
+                  aria-label={t('tags.deleteTag', { name: tag.name })}
+                  title={t('common.delete')}
                   className={buttonClasses({ variant: 'ghost', size: 'icon', className: 'hover:text-danger' })}
                 >
                   <TrashIcon className="size-4" />
@@ -146,13 +146,13 @@ export default function TagsView({ tagsState, savedRepos, lists, onTagDeleted })
       {tagToDelete && (
         <ConfirmDialog
           isOpen
-          title={`¿Eliminar la etiqueta "${tagToDelete.name}"?`}
+          title={t('tags.delete.title', { name: tagToDelete.name })}
           message={
             isTagInUse
-              ? `Se quitará de ${describeUsage(countReposWithTag(tagToDelete.id), countListsWithTag(tagToDelete.id))}. Los repositorios y las listas no se borran.`
-              : 'Nada la usa todavía. Tus repositorios y listas no se verán afectados.'
+              ? t('tags.delete.inUse', { usage: describeUsage(countReposWithTag(tagToDelete.id), countListsWithTag(tagToDelete.id)) })
+              : t('tags.delete.unused')
           }
-          confirmLabel="Eliminar etiqueta"
+          confirmLabel={t('tags.delete.confirm')}
           onConfirm={handleConfirmDelete}
           onClose={() => setTagToDelete(null)}
         />

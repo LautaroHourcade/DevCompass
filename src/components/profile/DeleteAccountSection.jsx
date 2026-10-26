@@ -6,10 +6,12 @@ import { TrashIcon } from '../ui/Icons'
 import { buttonClasses } from '../ui/buttonStyles'
 import { useToast } from '../../hooks/useToast'
 import { deleteAccount, signOut } from '../../services/authService'
+import { useTranslation } from '../../hooks/useTranslation'
 
 export default function DeleteAccountSection({ email }) {
   const navigate = useNavigate()
   const { showToast } = useToast()
+  const { t } = useTranslation()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
   function handleOpenDialog(event) {
@@ -28,14 +30,14 @@ export default function DeleteAccountSection({ email }) {
     }
 
     navigate('/', { replace: true })
-    showToast('Tu cuenta se ha eliminado.', 'info')
+    showToast(t('profile.delete.done'), 'info')
   }
 
   return (
     <ProfileSection
-      title="Zona de peligro"
+      title={t('profile.delete.title')}
       titleId="profile-danger-title"
-      description="Eliminar la cuenta borra tus repositorios guardados y tus listas. No se puede deshacer."
+      description={t('profile.delete.description')}
       danger
     >
       <button
@@ -44,14 +46,14 @@ export default function DeleteAccountSection({ email }) {
         className={buttonClasses({ variant: 'danger-outline', className: 'self-start' })}
       >
         <TrashIcon className="size-4" />
-        Eliminar mi cuenta
+        {t('profile.delete.button')}
       </button>
 
       <ConfirmDialog
         isOpen={isDialogOpen}
-        title="¿Eliminar tu cuenta?"
-        message="Se borrarán tu cuenta, tus repositorios guardados y tus listas de forma permanente."
-        confirmLabel="Eliminar cuenta"
+        title={t('profile.delete.confirmTitle')}
+        message={t('profile.delete.confirmMessage')}
+        confirmLabel={t('profile.delete.confirmLabel')}
         confirmText={email}
         onConfirm={handleConfirmDelete}
         onClose={() => setIsDialogOpen(false)}

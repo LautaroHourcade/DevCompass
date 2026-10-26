@@ -1,6 +1,9 @@
 import { CompassMark } from '../ui/Icons'
+import { useTranslation } from '../../hooks/useTranslation'
 
 export default function Footer() {
+  const { t } = useTranslation()
+
   return (
     <footer className="border-t border-line">
       <div className="mx-auto flex max-w-page flex-col items-center justify-between gap-3 px-4 py-8 text-xs text-muted sm:flex-row sm:px-6">
@@ -10,7 +13,7 @@ export default function Footer() {
           <span className="font-mono text-subtle">v0.2</span>
         </p>
         <p className="font-mono text-2xs tracking-[0.08em] text-subtle uppercase">
-          Datos de la API pública de GitHub · Capturas diarias
+          {t('footer.tagline')}
         </p>
       </div>
     </footer>

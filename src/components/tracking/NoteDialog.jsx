@@ -6,6 +6,7 @@ import { TrashIcon } from '../ui/Icons'
 import { buttonClasses } from '../ui/buttonStyles'
 import { useFormSubmit } from '../../hooks/useFormSubmit'
 import { MAX_NOTE_LENGTH } from '../../services/savedReposService'
+import { useTranslation } from '../../hooks/useTranslation'
 
 /**
  * Añadir, editar o borrar la nota de un repositorio guardado.
@@ -13,6 +14,7 @@ import { MAX_NOTE_LENGTH } from '../../services/savedReposService'
  * Se monta con un `key` distinto por repositorio para empezar con su nota.
  */
 export default function NoteDialog({ repo, onSave, onDelete, onClose }) {
+  const { t } = useTranslation()
   const [notes, setNotes] = useState(repo.notes)
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false)
   const { isSubmitting, error, run } = useFormSubmit()
@@ -55,7 +57,7 @@ export default function NoteDialog({ repo, onSave, onDelete, onClose }) {
       <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
         <header className="flex flex-col gap-1">
           <h2 id="note-dialog-title" className="text-xl font-semibold">
-            {hasSavedNote ? 'Tu nota' : 'Añadir nota'}
+            {hasSavedNote ? t('note.yourNote') : t('note.add')}
           </h2>
           <p className="font-mono text-sm text-muted">{repo.fullName}</p>
         </header>
@@ -64,12 +66,12 @@ export default function NoteDialog({ repo, onSave, onDelete, onClose }) {
 
         <TextField
           id="repo-note"
-          label="Nota personal"
+          label={t('note.label')}
           multiline
           rows={6}
-          placeholder="Ej: Revisar el ejemplo de autenticación de la carpeta /examples"
+          placeholder={t('note.placeholder')}
           maxLength={MAX_NOTE_LENGTH}
-          hint={`${notes.length}/${MAX_NOTE_LENGTH} caracteres · Solo tú puedes verla`}
+          hint={t('note.hint', { length: notes.length, max: MAX_NOTE_LENGTH })}
           value={notes}
           onChange={setNotes}
           disabled={isSubmitting}
@@ -78,7 +80,7 @@ export default function NoteDialog({ repo, onSave, onDelete, onClose }) {
         {isConfirmingDelete ? (
           <div className="flex flex-col gap-3 rounded-lg border border-danger/40 bg-danger/5 p-4 animate-fade-up">
             <p role="alert" className="text-sm">
-              ¿Borrar la nota? El repositorio seguirá en tu colección.
+              {t('note.confirmDelete')}
             </p>
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <button
@@ -87,7 +89,7 @@ export default function NoteDialog({ repo, onSave, onDelete, onClose }) {
                 disabled={isSubmitting}
                 className={buttonClasses({ size: 'sm' })}
               >
-                No, conservarla
+                {t('note.keep')}
               </button>
               <button
                 type="button"
@@ -95,7 +97,7 @@ export default function NoteDialog({ repo, onSave, onDelete, onClose }) {
                 disabled={isSubmitting}
                 className={buttonClasses({ variant: 'danger', size: 'sm' })}
               >
-                {isSubmitting ? 'Borrando…' : 'Sí, borrar nota'}
+                {isSubmitting ? t('note.deleting') : t('note.confirmDeleteButton')}
               </button>
             </div>
           </div>
@@ -109,7 +111,7 @@ export default function NoteDialog({ repo, onSave, onDelete, onClose }) {
                 className={buttonClasses({ variant: 'danger-outline', className: 'sm:mr-auto' })}
               >
                 <TrashIcon className="size-4" />
-                Borrar nota
+                {t('note.delete')}
               </button>
             )}
             <button
@@ -118,10 +120,10 @@ export default function NoteDialog({ repo, onSave, onDelete, onClose }) {
               disabled={isSubmitting}
               className={buttonClasses({ className: hasSavedNote ? '' : 'sm:ml-auto' })}
             >
-              Cancelar
+              {t('common.cancel')}
             </button>
             <button type="submit" disabled={isSubmitting} className={buttonClasses({ variant: 'primary' })}>
-              {isSubmitting ? 'Guardando…' : 'Guardar nota'}
+              {isSubmitting ? t('common.saving') : t('note.save')}
             </button>
           </footer>
         )}

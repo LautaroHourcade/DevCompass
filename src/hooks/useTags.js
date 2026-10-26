@@ -1,9 +1,10 @@
 import { useCallback, useMemo } from 'react'
+import { getLocale } from '../i18n/store'
 import { createTag, deleteTag, getTags, normalizeTagName, renameTag } from '../services/tagsService'
 import { useLoadedData } from './useLoadedData'
 
 function sortByName(tags) {
-  return [...tags].sort((first, second) => first.name.localeCompare(second.name, 'es', { sensitivity: 'base' }))
+  return [...tags].sort((first, second) => first.name.localeCompare(second.name, getLocale(), { sensitivity: 'base' }))
 }
 
 const NO_TAGS = []

@@ -11,6 +11,7 @@ import {
   getPasswordError,
   hasNoErrors,
 } from '../../utils/validation'
+import { useTranslation } from '../../hooks/useTranslation'
 
 /**
  * Cambio de contraseña confirmado por email, en dos pasos:
@@ -18,17 +19,18 @@ import {
  * 2. El usuario escribe el código y la nueva contraseña.
  */
 export default function PasswordChangeForm({ email }) {
+  const { t } = useTranslation()
   const [isCodeSent, setIsCodeSent] = useState(false)
   const [code, setCode] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [passwordConfirm, setPasswordConfirm] = useState('')
   const [fieldErrors, setFieldErrors] = useState({})
-  const [successMessage, setSuccessMessage] = useState('')
+  const [successKey, setSuccessKey] = useState('')
   const { isSubmitting, error, run } = useFormSubmit()
 
   async function handleSendCode(event) {
     event.preventDefault()
-    setSuccessMessage('')
+    setSuccessKey('')
 
     const isSent = await run(sendPasswordChangeCode)
     if (isSent) setIsCodeSent(true)
@@ -38,7 +40,7 @@ export default function PasswordChangeForm({ email }) {
     event.preventDefault()
 
     const errors = {
-      code: code.trim() ? '' : 'Escribe el código que te hemos enviado.',
+      code: code.trim() ? '' : t('profile.password.codeRequired'),
       newPassword: getPasswordError(newPassword),
       passwordConfirm: getPasswordConfirmError(newPassword, passwordConfirm),
     }
@@ -52,7 +54,7 @@ export default function PasswordChangeForm({ email }) {
     setCode('')
     setNewPassword('')
     setPasswordConfirm('')
-    setSuccessMessage('Contraseña actualizada.')
+    setSuccessKey('profile.password.updated')
   }
 
   function handleCancel(event) {
@@ -63,12 +65,12 @@ export default function PasswordChangeForm({ email }) {
 
   return (
     <ProfileSection
-      title="Contraseña"
+      title={t('profile.password.title')}
       titleId="profile-password-title"
-      description="Por seguridad, para cambiarla te enviamos un código a tu email."
+      description={t('profile.password.description')}
     >
       {error && <FormAlert type="error">{error}</FormAlert>}
-      {successMessage && <FormAlert type="success">{successMessage}</FormAlert>}
+      {successKey && <FormAlert type="success">{t(successKey)}</FormAlert>}
 
       {!isCodeSent ? (
         <button
@@ -77,17 +79,18 @@ export default function PasswordChangeForm({ email }) {
           disabled={isSubmitting}
           className={buttonClasses({ className: 'self-start' })}
         >
-          {isSubmitting ? 'Enviando código…' : 'Enviar código a mi email'}
+          {isSubmitting ? t('profile.password.sendingCode') : t('profile.password.sendCode')}
         </button>
       ) : (
         <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
           <FormAlert type="info">
-            Hemos enviado un código a <strong>{email}</strong>. Puede tardar un minuto en llegar.
+            {t('profile.password.codeSentBefore')} <strong>{email}</strong>
+            {t('profile.password.codeSentAfter')}
           </FormAlert>
 
           <TextField
             id="password-code"
-            label="Código de verificación"
+            label={t('profile.password.code')}
             inputMode="numeric"
             autoComplete="one-time-code"
             value={code}
@@ -98,17 +101,17 @@ export default function PasswordChangeForm({ email }) {
           <div className="grid gap-4 sm:grid-cols-2">
             <TextField
               id="password-new"
-              label="Nueva contraseña"
+              label={t('profile.password.new')}
               type="password"
               autoComplete="new-password"
-              hint={`Mínimo ${MIN_PASSWORD_LENGTH} caracteres.`}
+              hint={t('validation.passwordHint', { min: MIN_PASSWORD_LENGTH })}
               value={newPassword}
               onChange={setNewPassword}
               error={fieldErrors.newPassword}
             />
             <TextField
               id="password-confirm"
-              label="Repite la nueva contraseña"
+              label={t('profile.password.repeatNew')}
               type="password"
               autoComplete="new-password"
               value={passwordConfirm}
@@ -119,10 +122,10 @@ export default function PasswordChangeForm({ email }) {
 
           <div className="flex flex-wrap gap-2">
             <button type="submit" disabled={isSubmitting} className={buttonClasses({ variant: 'primary' })}>
-              {isSubmitting ? 'Guardando…' : 'Cambiar contraseña'}
+              {isSubmitting ? t('common.saving') : t('profile.password.submit')}
             </button>
             <button type="button" onClick={handleSendCode} disabled={isSubmitting} className={buttonClasses()}>
-              Reenviar código
+              {t('profile.password.resendCode')}
             </button>
             <button
               type="button"
@@ -130,7 +133,7 @@ export default function PasswordChangeForm({ email }) {
               disabled={isSubmitting}
               className={buttonClasses({ variant: 'ghost' })}
             >
-              Cancelar
+              {t('common.cancel')}
             </button>
           </div>
         </form>

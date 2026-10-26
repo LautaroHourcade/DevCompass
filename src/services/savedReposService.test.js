@@ -107,11 +107,8 @@ describe('saveRepo', () => {
     expect(supabase.from).not.toHaveBeenCalledWith('repositories')
   })
 
-  it('muestra el mensaje de error que devuelve el servidor', async () => {
-    supabase.functions.invoke.mockResolvedValueOnce({
-      data: null,
-      error: { context: { json: async () => ({ error: 'Este repositorio ya no está disponible en GitHub.' }) } },
-    })
+  it('elige el mensaje según la respuesta del servidor', async () => {
+    supabase.functions.invoke.mockResolvedValueOnce({ data: null, error: { context: { status: 404 } } })
     await expect(saveRepo({ id: 42 })).rejects.toThrow('Este repositorio ya no está disponible en GitHub.')
   })
 

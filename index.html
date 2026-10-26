@@ -7,13 +7,20 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>DevCompass</title>
     <script>
-      // Aplica el tema antes de pintar para evitar el parpadeo claro/oscuro.
+      // Aplica el tema y el idioma antes de pintar para evitar parpadeos.
       ;(function () {
         let theme = null
+        let language = null
         try {
           theme = localStorage.getItem('devcompass-theme')
+          language = localStorage.getItem('devcompass-language')
         } catch (error) {
           theme = null
+        }
+        if (language === 'es' || language === 'en') {
+          document.documentElement.lang = language
+        } else if (!navigator.language.toLowerCase().startsWith('es')) {
+          document.documentElement.lang = 'en'
         }
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
         if (theme === 'dark' || (!theme && prefersDark)) {

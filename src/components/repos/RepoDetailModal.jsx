@@ -16,7 +16,8 @@ import {
 } from '../ui/Icons'
 import { buttonClasses } from '../ui/buttonStyles'
 import { getRepositoryLanguages } from '../../services/githubService'
-import { formatDate, formatFullNumber, formatRelativeDate } from '../../utils/formatters'
+import { formatDate, formatFullNumber, formatLicense, formatRelativeDate } from '../../utils/formatters'
+import { useTranslation } from '../../hooks/useTranslation'
 
 const TITLE_ID = 'repo-detail-title'
 
@@ -44,6 +45,7 @@ export default function RepoDetailModal({ repo, onClose, isSaved, onToggleSave }
 const SECTION_TITLE_CLASSES = 'font-mono text-2xs tracking-[0.14em] text-muted uppercase'
 
 function RepoDetail({ repo, onClose, isSaved, onToggleSave }) {
+  const { t } = useTranslation()
   const languagesState = useRepositoryLanguages(repo.id)
   const isRepoSaved = isSaved(repo.id)
 
@@ -55,10 +57,10 @@ function RepoDetail({ repo, onClose, isSaved, onToggleSave }) {
   const stats = [
     { label: 'Stars', value: formatFullNumber(repo.stars), Icon: StarIcon, iconClass: 'text-star', isNumber: true },
     { label: 'Forks', value: formatFullNumber(repo.forks), Icon: ForkIcon, iconClass: 'text-purple', isNumber: true },
-    { label: 'Issues abiertos', value: formatFullNumber(repo.openIssues), Icon: IssueIcon, iconClass: 'text-info', isNumber: true },
-    { label: 'Licencia', value: repo.license ?? 'Sin licencia', Icon: LicenseIcon, iconClass: 'text-subtle' },
-    { label: 'Actualizado', value: formatRelativeDate(repo.updatedAt), Icon: ClockIcon, iconClass: 'text-subtle' },
-    { label: 'Creado', value: formatDate(repo.createdAt), Icon: CalendarIcon, iconClass: 'text-subtle' },
+    { label: t('repo.openIssues'), value: formatFullNumber(repo.openIssues), Icon: IssueIcon, iconClass: 'text-info', isNumber: true },
+    { label: t('repo.license'), value: formatLicense(repo.license), Icon: LicenseIcon, iconClass: 'text-subtle' },
+    { label: t('repo.updated'), value: formatRelativeDate(repo.updatedAt), Icon: ClockIcon, iconClass: 'text-subtle' },
+    { label: t('repo.created'), value: formatDate(repo.createdAt), Icon: CalendarIcon, iconClass: 'text-subtle' },
   ]
 
   return (
@@ -78,7 +80,7 @@ function RepoDetail({ repo, onClose, isSaved, onToggleSave }) {
             rel="noopener noreferrer"
             className="text-sm text-muted transition-colors duration-150 hover:text-accent"
           >
-            <span className="sr-only">Autor: </span>
+            <span className="sr-only">{t('repo.author')} </span>
             {repo.owner.login}
           </a>
           <h2 id={TITLE_ID} className="text-2xl leading-tight font-semibold tracking-[-0.03em] break-words sm:text-3xl">
@@ -88,17 +90,17 @@ function RepoDetail({ repo, onClose, isSaved, onToggleSave }) {
         <button
           type="button"
           onClick={handleClose}
-          aria-label="Cerrar detalle"
+          aria-label={t('repo.closeDetail')}
           className={buttonClasses({ variant: 'ghost', size: 'icon', className: '-mt-1 -mr-1' })}
         >
           <CloseIcon className="size-5" />
         </button>
       </header>
 
-      <p className="-mt-2 text-base text-muted">{repo.description || 'Este repositorio no tiene descripción.'}</p>
+      <p className="-mt-2 text-base text-muted">{repo.description || t('repo.noDescription')}</p>
 
       {repo.topics.length > 0 && (
-        <ul aria-label="Temas" className="-mt-2 flex flex-wrap gap-1.5">
+        <ul aria-label={t('repo.topics')} className="-mt-2 flex flex-wrap gap-1.5">
           {repo.topics.map((topic) => (
             <li key={topic} className="rounded-md bg-accent-soft px-2 py-0.5 font-mono text-xs text-accent">
               {topic}
@@ -122,7 +124,7 @@ function RepoDetail({ repo, onClose, isSaved, onToggleSave }) {
 
       <section aria-labelledby="repo-languages-title" className="flex flex-col gap-3">
         <h3 id="repo-languages-title" className={SECTION_TITLE_CLASSES}>
-          Lenguajes
+          {t('repo.languages')}
         </h3>
         <LanguagesContent state={languagesState} />
       </section>
@@ -135,13 +137,13 @@ function RepoDetail({ repo, onClose, isSaved, onToggleSave }) {
         {repo.homepage && (
           <a href={repo.homepage} target="_blank" rel="noopener noreferrer" className={buttonClasses()}>
             <LinkIcon className="size-4" />
-            Web del proyecto
+            {t('repo.homepage')}
           </a>
         )}
         <a href={repo.url} target="_blank" rel="noopener noreferrer" className={buttonClasses({ variant: 'primary' })}>
           <GitHubIcon className="size-4" />
-          Abrir en GitHub
-          <span className="sr-only">(se abre en una pestaña nueva)</span>
+          {t('repo.openOnGitHub')}
+          <span className="sr-only">{t('repo.opensInNewTab')}</span>
         </a>
       </footer>
     </article>
@@ -149,16 +151,18 @@ function RepoDetail({ repo, onClose, isSaved, onToggleSave }) {
 }
 
 function LanguagesContent({ state }) {
+  const { t } = useTranslation()
+
   if (state.status === 'loading') {
-    return <p className="h-2.5 w-full rounded-full bg-surface-2 animate-shimmer" aria-label="Cargando lenguajes" />
+    return <p className="h-2.5 w-full rounded-full bg-surface-2 animate-shimmer" aria-label={t('repo.loadingLanguages')} />
   }
 
   if (state.status === 'error') {
-    return <p className="text-sm text-muted">No se pudieron cargar los lenguajes.</p>
+    return <p className="text-sm text-muted">{t('repo.languagesError')}</p>
   }
 
   if (state.languages.length === 0) {
-    return <p className="text-sm text-muted">GitHub no detecta lenguajes en este repositorio.</p>
+    return <p className="text-sm text-muted">{t('repo.noLanguages')}</p>
   }
 
   return <LanguageBar languages={state.languages} />
