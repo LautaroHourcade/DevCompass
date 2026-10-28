@@ -5,9 +5,10 @@ import NavTabs from './NavTabs'
 import ThemeToggle from './ThemeToggle'
 import UserMenu from './UserMenu'
 import LanguageToggle from './LanguageToggle'
-import { MenuIcon } from '../ui/Icons'
+import { CompassMark, MenuIcon } from '../ui/Icons'
 import { buttonClasses } from '../ui/buttonStyles'
 import { NAV_ITEMS, getSectionForPath } from '../../constants/navigation'
+import { useShortestRotation } from '../../hooks/useShortestRotation'
 import { useTranslation } from '../../hooks/useTranslation'
 
 export default function Header({ user, savedCount, theme, onToggleTheme, onSignOut }) {
@@ -17,6 +18,8 @@ export default function Header({ user, savedCount, theme, onToggleTheme, onSignO
 
   const visibleItems = NAV_ITEMS.filter((item) => !item.requiresAuth || user)
   const section = getSectionForPath(location.pathname)
+  // La aguja de la marca apunta al rumbo de la sección actual.
+  const needleRotation = useShortestRotation(section?.bearing ?? 0)
 
   function handleOpenMenu(event) {
     event.preventDefault()
@@ -26,7 +29,8 @@ export default function Header({ user, savedCount, theme, onToggleTheme, onSignO
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-canvas/80 backdrop-blur-xl backdrop-saturate-150">
       <div className="mx-auto flex h-14 max-w-page items-center gap-4 px-4 sm:px-6">
-        <Link to="/" className="flex shrink-0 items-center rounded-lg">
+        <Link to="/" className="flex shrink-0 items-center gap-2.5 rounded-lg">
+          <CompassMark bearing={needleRotation} className="size-8 text-fg" />
           <span className="text-[1.6rem] font-semibold tracking-[-0.02em]">DevCompass</span>
           <span className="sr-only">{t('header.goToExplore')}</span>
         </Link>

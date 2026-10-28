@@ -1,3 +1,4 @@
+import { CompassMark } from '../ui/Icons'
 import { useTranslation } from '../../hooks/useTranslation'
 
 export default function Footer() {
@@ -7,6 +8,7 @@ export default function Footer() {
     <footer className="border-t border-line">
       <div className="mx-auto flex max-w-page flex-col items-center justify-between gap-3 px-4 py-8 text-xs text-muted sm:flex-row sm:px-6">
         <p className="flex items-center gap-2">
+          <CompassMark className="size-5 text-muted" />
           <span className="font-medium text-fg">DevCompass</span>
           <span className="font-mono text-subtle">v0.2</span>
         </p>
